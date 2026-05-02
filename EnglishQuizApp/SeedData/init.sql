@@ -1,0 +1,1 @@
+SELECT * FROM QuizSessions ORDER BY Id DESC

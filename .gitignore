@@ -1,0 +1,16 @@
+# .NET
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
+
+# EF Core
+**/Migrations/*Designer.cs
+
+# OS
+.DS_Store
+Thumbs.db

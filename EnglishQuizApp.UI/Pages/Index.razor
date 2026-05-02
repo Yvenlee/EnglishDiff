@@ -1,0 +1,170 @@
+﻿@page "/"
+
+@using EnglishQuizApp.UI.Models
+@inject EnglishQuizApp.UI.Services.QuizService QuizService
+
+<h2>English Quiz</h2>
+
+@if (progress != null)
+{
+    <div>
+        <b>Level:</b> @progress.Level
+        <br />
+        <b>XP:</b> @progress.TotalXp
+    </div>
+}
+
+@if (questions == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <p>Question @(currentIndex + 1) / @questions.Count</p>
+
+    <p><b>@CurrentQuestion.Text</b></p>
+
+    @foreach (var a in CurrentQuestion.Answers)
+    {
+        var isSelected =
+            selectedAnswers.TryGetValue(CurrentQuestion.Id, out var selected)
+            && selected == a.Id;
+
+        <div>
+            <label>
+                <input type="radio"
+                       name="@($"q_{CurrentQuestion.Id}")"
+                       disabled="@isAnswered"
+                       checked="@isSelected"
+                       @onchange="() => SelectAnswer(CurrentQuestion.Id, a.Id)" />
+                @a.Text
+            </label>
+        </div>
+    }
+
+    <br />
+
+    @if (currentIndex < questions.Count - 1)
+    {
+        <button disabled="@(!isAnswered)" @onclick="Next">
+            Next
+        </button>
+    }
+    else
+    {
+        <button disabled="@(!isAnswered || isSubmitted)" @onclick="SubmitQuiz">
+            Finish
+        </button>
+    }
+
+    <p>Progress: @ProgressPercent%</p>
+
+    @if (result != null)
+    {
+        <h3>Result</h3>
+
+        <p><b>@result.ScorePercent %</b></p>
+
+        <p>
+            @result.CorrectAnswers / @result.TotalQuestions
+        </p>
+
+        <p>
+            @if (result.ScorePercent >= 100)
+            {
+                <span>Perfect !</span>
+            }
+            else if (result.ScorePercent >= 80)
+            {
+                <span>Excellent</span>
+            }
+            else if (result.ScorePercent >= 50)
+            {
+                <span>Keep Going !</span>
+            }
+            else
+            {
+                <span>Keep practicing</span>
+            }
+        </p>
+    }
+}
+
+@code {
+
+    private List<QuestionDto>? questions;
+    private int currentIndex = 0;
+    private ScoreResultDto? result;
+    private ProgressDto? progress;
+    private bool isSubmitted = false;
+
+    private Dictionary<int, int> selectedAnswers = new();
+
+    private bool isAnswered = false;
+    private string sessionId = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = "demo-user";
+
+        var quiz = await QuizService.GetQuiz(userId);
+
+        questions = quiz.Questions ?? new List<QuestionDto>();
+        sessionId = quiz.SessionId;
+
+        selectedAnswers = new Dictionary<int, int>();
+
+        progress = await QuizService.GetProgress();
+    }
+
+    private QuestionDto CurrentQuestion =>
+        questions![currentIndex];
+
+    private string ProgressPercent =>
+        questions == null || questions.Count == 0
+            ? "0"
+            : $"{((double)(currentIndex + (isAnswered ? 1 : 0)) / questions.Count) * 100:0}";
+
+    private void SelectAnswer(int questionId, int answerId)
+    {
+        if (isAnswered) return;
+
+        selectedAnswers[questionId] = answerId;
+        isAnswered = true;
+    }
+
+    private void Next()
+    {
+        if (!isAnswered) return;
+
+        if (currentIndex < questions!.Count - 1)
+        {
+            currentIndex++;
+            isAnswered = false;
+        }
+    }
+
+    private async Task SubmitQuiz()
+    {
+        if (isSubmitted) return;
+
+        isSubmitted = true;
+
+        var payload = questions!.Select(q =>
+        {
+            selectedAnswers.TryGetValue(q.Id, out var answerId);
+
+            return new SubmitAnswerDto
+            {
+                QuestionId = q.Id,
+                AnswerId = answerId
+            };
+        }).ToList();
+
+        Console.WriteLine($"SESSION ID = {sessionId}");
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(payload));
+
+        result = await QuizService.Submit(sessionId, payload);
+        progress = await QuizService.GetProgress();
+    }
+}

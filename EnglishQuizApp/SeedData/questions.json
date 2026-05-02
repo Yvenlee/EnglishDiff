@@ -1,0 +1,502 @@
+[
+  {
+    "text": "What is 'pomme' in English?",
+    "category": "Food",
+    "difficulty": 1,
+    "answers": [
+      { "text": "apple", "isCorrect": true },
+      { "text": "banana", "isCorrect": false },
+      { "text": "orange", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'chien' in English?",
+    "category": "Animals",
+    "difficulty": 1,
+    "answers": [
+      { "text": "cat", "isCorrect": false },
+      { "text": "dog", "isCorrect": true },
+      { "text": "bird", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'chat' in English?",
+    "category": "Animals",
+    "difficulty": 1,
+    "answers": [
+      { "text": "dog", "isCorrect": false },
+      { "text": "cat", "isCorrect": true },
+      { "text": "cow", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'cheval' in English?",
+    "category": "Animals",
+    "difficulty": 1,
+    "answers": [
+      { "text": "sheep", "isCorrect": false },
+      { "text": "horse", "isCorrect": true },
+      { "text": "goat", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'maison' in English?",
+    "category": "Objects",
+    "difficulty": 1,
+    "answers": [
+      { "text": "house", "isCorrect": true },
+      { "text": "car", "isCorrect": false },
+      { "text": "street", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'voiture' in English?",
+    "category": "Transport",
+    "difficulty": 1,
+    "answers": [
+      { "text": "bike", "isCorrect": false },
+      { "text": "car", "isCorrect": true },
+      { "text": "train", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'livre' in English?",
+    "category": "School",
+    "difficulty": 1,
+    "answers": [
+      { "text": "book", "isCorrect": true },
+      { "text": "pen", "isCorrect": false },
+      { "text": "desk", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'stylo' in English?",
+    "category": "School",
+    "difficulty": 1,
+    "answers": [
+      { "text": "pencil", "isCorrect": false },
+      { "text": "pen", "isCorrect": true },
+      { "text": "paper", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'table' in English?",
+    "category": "Objects",
+    "difficulty": 1,
+    "answers": [
+      { "text": "table", "isCorrect": true },
+      { "text": "chair", "isCorrect": false },
+      { "text": "floor", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'chaise' in English?",
+    "category": "Objects",
+    "difficulty": 1,
+    "answers": [
+      { "text": "bed", "isCorrect": false },
+      { "text": "chair", "isCorrect": true },
+      { "text": "table", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'fenêtre' in English?",
+    "category": "Objects",
+    "difficulty": 2,
+    "answers": [
+      { "text": "window", "isCorrect": true },
+      { "text": "door", "isCorrect": false },
+      { "text": "wall", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'porte' in English?",
+    "category": "Objects",
+    "difficulty": 1,
+    "answers": [
+      { "text": "roof", "isCorrect": false },
+      { "text": "door", "isCorrect": true },
+      { "text": "window", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'arbre' in English?",
+    "category": "Nature",
+    "difficulty": 1,
+    "answers": [
+      { "text": "flower", "isCorrect": false },
+      { "text": "tree", "isCorrect": true },
+      { "text": "grass", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'fleur' in English?",
+    "category": "Nature",
+    "difficulty": 1,
+    "answers": [
+      { "text": "flower", "isCorrect": true },
+      { "text": "leaf", "isCorrect": false },
+      { "text": "tree", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'soleil' in English?",
+    "category": "Nature",
+    "difficulty": 1,
+    "answers": [
+      { "text": "moon", "isCorrect": false },
+      { "text": "sun", "isCorrect": true },
+      { "text": "star", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'lune' in English?",
+    "category": "Nature",
+    "difficulty": 1,
+    "answers": [
+      { "text": "sun", "isCorrect": false },
+      { "text": "moon", "isCorrect": true },
+      { "text": "planet", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'eau' in English?",
+    "category": "Nature",
+    "difficulty": 1,
+    "answers": [
+      { "text": "fire", "isCorrect": false },
+      { "text": "water", "isCorrect": true },
+      { "text": "air", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'pain' in English?",
+    "category": "Food",
+    "difficulty": 1,
+    "answers": [
+      { "text": "bread", "isCorrect": true },
+      { "text": "cheese", "isCorrect": false },
+      { "text": "meat", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'fromage' in English?",
+    "category": "Food",
+    "difficulty": 1,
+    "answers": [
+      { "text": "milk", "isCorrect": false },
+      { "text": "cheese", "isCorrect": true },
+      { "text": "butter", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'poisson' in English?",
+    "category": "Animals",
+    "difficulty": 1,
+    "answers": [
+      { "text": "fish", "isCorrect": true },
+      { "text": "bird", "isCorrect": false },
+      { "text": "crab", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'oiseau' in English?",
+    "category": "Animals",
+    "difficulty": 1,
+    "answers": [
+      { "text": "bird", "isCorrect": true },
+      { "text": "fish", "isCorrect": false },
+      { "text": "dog", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'vélo' in English?",
+    "category": "Transport",
+    "difficulty": 1,
+    "answers": [
+      { "text": "car", "isCorrect": false },
+      { "text": "bicycle", "isCorrect": true },
+      { "text": "bus", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'train' in English?",
+    "category": "Transport",
+    "difficulty": 1,
+    "answers": [
+      { "text": "train", "isCorrect": true },
+      { "text": "plane", "isCorrect": false },
+      { "text": "car", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'avion' in English?",
+    "category": "Transport",
+    "difficulty": 1,
+    "answers": [
+      { "text": "boat", "isCorrect": false },
+      { "text": "airplane", "isCorrect": true },
+      { "text": "train", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'route' in English?",
+    "category": "Transport",
+    "difficulty": 2,
+    "answers": [
+      { "text": "road", "isCorrect": true },
+      { "text": "river", "isCorrect": false },
+      { "text": "bridge", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'ville' in English?",
+    "category": "Places",
+    "difficulty": 1,
+    "answers": [
+      { "text": "village", "isCorrect": false },
+      { "text": "city", "isCorrect": true },
+      { "text": "country", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'village' in English?",
+    "category": "Places",
+    "difficulty": 1,
+    "answers": [
+      { "text": "city", "isCorrect": false },
+      { "text": "village", "isCorrect": true },
+      { "text": "township", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'école' in English?",
+    "category": "School",
+    "difficulty": 1,
+    "answers": [
+      { "text": "school", "isCorrect": true },
+      { "text": "library", "isCorrect": false },
+      { "text": "hospital", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'professeur' in English?",
+    "category": "School",
+    "difficulty": 1,
+    "answers": [
+      { "text": "student", "isCorrect": false },
+      { "text": "teacher", "isCorrect": true },
+      { "text": "principal", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'élève' in English?",
+    "category": "School",
+    "difficulty": 1,
+    "answers": [
+      { "text": "teacher", "isCorrect": false },
+      { "text": "student", "isCorrect": true },
+      { "text": "classroom", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'ami' in English?",
+    "category": "People",
+    "difficulty": 1,
+    "answers": [
+      { "text": "enemy", "isCorrect": false },
+      { "text": "friend", "isCorrect": true },
+      { "text": "stranger", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'famille' in English?",
+    "category": "People",
+    "difficulty": 1,
+    "answers": [
+      { "text": "family", "isCorrect": true },
+      { "text": "friends", "isCorrect": false },
+      { "text": "neighborhood", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'enfant' in English?",
+    "category": "People",
+    "difficulty": 1,
+    "answers": [
+      { "text": "adult", "isCorrect": false },
+      { "text": "child", "isCorrect": true },
+      { "text": "baby", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'homme' in English?",
+    "category": "People",
+    "difficulty": 1,
+    "answers": [
+      { "text": "woman", "isCorrect": false },
+      { "text": "man", "isCorrect": true },
+      { "text": "boy", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'femme' in English?",
+    "category": "People",
+    "difficulty": 1,
+    "answers": [
+      { "text": "girl", "isCorrect": false },
+      { "text": "woman", "isCorrect": true },
+      { "text": "man", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'main' in English?",
+    "category": "Body",
+    "difficulty": 1,
+    "answers": [
+      { "text": "leg", "isCorrect": false },
+      { "text": "hand", "isCorrect": true },
+      { "text": "arm", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'pied' in English?",
+    "category": "Body",
+    "difficulty": 1,
+    "answers": [
+      { "text": "foot", "isCorrect": true },
+      { "text": "hand", "isCorrect": false },
+      { "text": "head", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'tête' in English?",
+    "category": "Body",
+    "difficulty": 1,
+    "answers": [
+      { "text": "head", "isCorrect": true },
+      { "text": "face", "isCorrect": false },
+      { "text": "neck", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'nez' in English?",
+    "category": "Body",
+    "difficulty": 1,
+    "answers": [
+      { "text": "mouth", "isCorrect": false },
+      { "text": "nose", "isCorrect": true },
+      { "text": "ear", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'bouche' in English?",
+    "category": "Body",
+    "difficulty": 1,
+    "answers": [
+      { "text": "mouth", "isCorrect": true },
+      { "text": "eye", "isCorrect": false },
+      { "text": "nose", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'œil' in English?",
+    "category": "Body",
+    "difficulty": 1,
+    "answers": [
+      { "text": "ear", "isCorrect": false },
+      { "text": "eye", "isCorrect": true },
+      { "text": "mouth", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'rouge' in English?",
+    "category": "Colors",
+    "difficulty": 1,
+    "answers": [
+      { "text": "red", "isCorrect": true },
+      { "text": "blue", "isCorrect": false },
+      { "text": "green", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'bleu' in English?",
+    "category": "Colors",
+    "difficulty": 1,
+    "answers": [
+      { "text": "yellow", "isCorrect": false },
+      { "text": "blue", "isCorrect": true },
+      { "text": "black", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'vert' in English?",
+    "category": "Colors",
+    "difficulty": 1,
+    "answers": [
+      { "text": "green", "isCorrect": true },
+      { "text": "red", "isCorrect": false },
+      { "text": "white", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'jaune' in English?",
+    "category": "Colors",
+    "difficulty": 1,
+    "answers": [
+      { "text": "blue", "isCorrect": false },
+      { "text": "yellow", "isCorrect": true },
+      { "text": "green", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'noir' in English?",
+    "category": "Colors",
+    "difficulty": 1,
+    "answers": [
+      { "text": "white", "isCorrect": false },
+      { "text": "black", "isCorrect": true },
+      { "text": "grey", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'blanc' in English?",
+    "category": "Colors",
+    "difficulty": 1,
+    "answers": [
+      { "text": "black", "isCorrect": false },
+      { "text": "white", "isCorrect": true },
+      { "text": "red", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'chaud' in English?",
+    "category": "Adjectives",
+    "difficulty": 1,
+    "answers": [
+      { "text": "cold", "isCorrect": false },
+      { "text": "hot", "isCorrect": true },
+      { "text": "warm", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'froid' in English?",
+    "category": "Adjectives",
+    "difficulty": 1,
+    "answers": [
+      { "text": "hot", "isCorrect": false },
+      { "text": "cold", "isCorrect": true },
+      { "text": "dry", "isCorrect": false }
+    ]
+  },
+  {
+    "text": "What is 'grand' in English?",
+    "category": "Adjectives",
+    "difficulty": 1,
+    "answers": [
+      { "text": "small", "isCorrect": false },
+      { "text": "big", "isCorrect": true },
+      { "text": "thin", "isCorrect": false }
+    ]
+  }
+]
