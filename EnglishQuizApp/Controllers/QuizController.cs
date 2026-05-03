@@ -60,7 +60,7 @@ public IActionResult GetRandom(int count, string userId)
                     a.Question != null &&
                     a.QuestionId != q.Id &&
                     a.Question.Category == q.Category &&
-                    !usedInQuiz.Contains(a.Text))
+                    !usedInQuiz.Contains(a.Text) && a.Text != correctAnswer.Text)
                 .OrderBy(_ => random.Next())
                 .Take(2)
                 .ToList();
@@ -71,7 +71,7 @@ public IActionResult GetRandom(int count, string userId)
                 wrongPool = allWrongAnswers
                     .Where(a =>
                         a.QuestionId != q.Id &&
-                        !usedInQuiz.Contains(a.Text))
+                        !usedInQuiz.Contains(a.Text) && a.Text != correctAnswer.Text)
                     .OrderBy(_ => random.Next())
                     .Take(2)
                     .ToList();
