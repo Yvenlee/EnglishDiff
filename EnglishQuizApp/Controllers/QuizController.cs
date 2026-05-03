@@ -1,224 +1,82 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using EnglishQuizApp.Data;
-using EnglishQuizApp.DTOs;
-
-namespace EnglishQuizApp.Controllers;
+using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/[controller]")]
 public class QuizController : ControllerBase
 {
+    private readonly QuizService _quizService;
+    private readonly SessionService _sessionService;
+    private readonly ProgressService _progressService;
     private readonly AppDbContext _context;
 
-    public QuizController(AppDbContext context)
+    public QuizController(
+        QuizService quizService,
+        SessionService sessionService,
+        ProgressService progressService,
+        AppDbContext context)
     {
+        _quizService = quizService;
+        _sessionService = sessionService;
+        _progressService = progressService;
         _context = context;
     }
 
-
-[HttpGet("random")]
-public IActionResult GetRandom(int count, string userId)
-{
-    var session = new QuizSession
+    [HttpGet("random")]
+    public IActionResult GetRandom(int count, string userId)
     {
-        SessionId = Guid.NewGuid().ToString(),
-        UserId = userId,
-        IsCompleted = false,
-        CreatedAt = DateTime.UtcNow
-    };
+        var session = _sessionService.CreateSession(userId);
+        var questions = _quizService.GenerateQuestions(count);
 
-    _context.QuizSessions.Add(session);
-    _context.SaveChanges();
-
-    // 🔥 Pool des mauvaises réponses
-    var allWrongAnswers = _context.Answers
-        .AsNoTracking()
-        .Where(a => !a.IsCorrect)
-        .Include(a => a.Question)
-        .ToList();
-
-    // 🔥 Questions aléatoires
-    var rawQuestions = _context.Questions
-        .AsNoTracking()
-        .Include(q => q.Answers)
-        .OrderBy(x => Guid.NewGuid())
-        .Take(count)
-        .ToList();
-
-    var random = new Random();
-    var usedInQuiz = new HashSet<string>();
-
-    var questions = rawQuestions
-        .Select(q =>
+        return Ok(new
         {
-            var correctAnswer = q.Answers.First(a => a.IsCorrect);
-
-            // 🎯 mauvaises réponses (catégorie + anti doublon)
-            var wrongPool = allWrongAnswers
-                .Where(a =>
-                    a.Question != null &&
-                    a.QuestionId != q.Id &&
-                    a.Question.Category == q.Category &&
-                    !usedInQuiz.Contains(a.Text) && a.Text != correctAnswer.Text)
-                .OrderBy(_ => random.Next())
-                .Take(2)
-                .ToList();
-
-            // fallback si pas assez
-            if (wrongPool.Count < 2)
-            {
-                wrongPool = allWrongAnswers
-                    .Where(a =>
-                        a.QuestionId != q.Id &&
-                        !usedInQuiz.Contains(a.Text) && a.Text != correctAnswer.Text)
-                    .OrderBy(_ => random.Next())
-                    .Take(2)
-                    .ToList();
-            }
-
-            foreach (var a in wrongPool)
-                usedInQuiz.Add(a.Text);
-
-            var answers = new List<AnswerDto>(3)
-            {
-                new AnswerDto
-                {
-                    Id = correctAnswer.Id,
-                    Text = correctAnswer.Text
-                }
-            };
-
-            answers.AddRange(wrongPool.Select(a => new AnswerDto
-            {
-                Id = a.Id,
-                Text = a.Text
-            }));
-
-            return new QuestionDto
-            {
-                Id = q.Id,
-                Text = q.Text,
-                Answers = answers
-                    .OrderBy(_ => random.Next())
-                    .ToList()
-            };
-        })
-        .ToList();
-
-    return Ok(new
-    {
-        sessionId = session.SessionId,
-        questions
-    });
-}
-
-[HttpPost("submit")]
-public async Task<IActionResult> SubmitQuizAsync(SubmitQuizRequestDto request)
-{
-    if (request == null || request.Answers == null || !request.Answers.Any())
-    {
-        Console.WriteLine("❌ Invalid request");
-        return BadRequest("Invalid request.");
+            sessionId = session.SessionId,
+            questions
+        });
     }
 
-    var session = await _context.QuizSessions
-        .AsNoTracking()
-        .SingleOrDefaultAsync(s => EF.Functions.Like(s.SessionId, request.SessionId));
-
-    if (session == null)
+    [HttpPost("submit")]
+    public IActionResult Submit(SubmitQuizRequestDto request)
     {
-        Console.WriteLine("❌ Session NOT FOUND");
-        return BadRequest("Invalid session.");
-    }
+        var session = _sessionService.GetSession(request.SessionId);
 
-    string userId = session.UserId;
+        if (session == null || session.IsCompleted)
+            return BadRequest("Invalid session.");
 
-    if (session.IsCompleted)
-    {
-        Console.WriteLine("❌ Quiz already submitted");
-        return BadRequest("Quiz already submitted.");
-    }
+        int correct = _quizService.CalculateScore(request);
+        int total = request.Answers.Count;
 
-    int correct = 0;
+        int xp = correct * 10;
 
-    foreach (var answer in request.Answers)
-    {
-        var question = _context.Questions
-            .Include(q => q.Answers)
-            .FirstOrDefault(q => q.Id == answer.QuestionId);
+        var progress = _progressService.GetOrCreate(session.UserId);
+        _progressService.AddXp(progress, xp);
 
-        if (question == null)
-            continue;
+        _sessionService.CompleteSession(session);
 
-        var selectedAnswer = question.Answers
-            .FirstOrDefault(a => a.Id == answer.AnswerId);
-
-        if (selectedAnswer != null && selectedAnswer.IsCorrect)
-            correct++;
-    }
-
-    int total = request.Answers.Count;
-    int scorePercent = total == 0 ? 0 : (int)Math.Round((double)correct / total * 100);
-
-    int earnedXp = correct * 10;
-
-    var progress = _context.UserProgresses.FirstOrDefault(p => p.UserId == userId);
-
-    if (progress == null)
-    {
-        progress = new UserProgress
+        var result = new QuizResult
         {
-            UserId = userId,
-            TotalXp = 0,
-            Level = 0
+            ScorePercent = total == 0 ? 0 : (int)Math.Round((double)correct / total * 100),
+            CorrectAnswers = correct,
+            TotalQuestions = total
         };
 
-        _context.UserProgresses.Add(progress);
+        _context.QuizResults.Add(result);
+        _context.SaveChanges();
+
+        return Ok(new
+        {
+            result.ScorePercent,
+            correctAnswers = correct,
+            totalQuestions = total,
+            earnedXp = xp,
+            totalXp = progress.TotalXp,
+            level = progress.Level
+        });
     }
 
-    progress.TotalXp += earnedXp;
-    progress.Level = progress.TotalXp / 100;
-
-    // 🔥 SESSION LOCK
-    session.IsCompleted = true;
-    _context.QuizSessions.Update(session);
-
-    // 🔥 RESULT SAVE
-    var result = new QuizResult
+    [HttpGet("progress")]
+    public IActionResult Progress()
     {
-        ScorePercent = scorePercent,
-        CorrectAnswers = correct,
-        TotalQuestions = total
-    };
-
-    _context.QuizResults.Add(result);
-
-    _context.SaveChanges();
-
-    return Ok(new
-    {
-        scorePercent,
-        correctAnswers = correct,
-        totalQuestions = total,
-        earnedXp,
-        totalXp = progress.TotalXp,
-        level = progress.Level
-    });
-}
-
-[HttpGet("progress")]
-public IActionResult GetProgress()
-{
-    var progress = _context.UserProgresses.FirstOrDefault();
-
-    if (progress == null)
-        return Ok(new { totalXp = 0, level = 0 });
-
-    return Ok(new
-    {
-        totalXp = progress?.TotalXp ?? 0,
-        level = progress?.Level ?? 0
-    });
-}
+        return Ok(_progressService.GetProgress());
+    }
 }

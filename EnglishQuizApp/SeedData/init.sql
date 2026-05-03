@@ -1,1 +1,1 @@
-SELECT * FROM QuizSessions ORDER BY Id DESC
+SELECT * FROM Questions ORDER BY Id DESC
