@@ -25,10 +25,10 @@ public class SessionService
         return session;
     }
 
-    public QuizSession? GetSession(string sessionId)
+    public QuizSession? GetSession(string sessionId, string userId)
     {
         return _context.QuizSessions
-            .FirstOrDefault(s => s.SessionId == sessionId);
+            .FirstOrDefault(s => s.SessionId == sessionId && s.UserId == userId);
     }
 
     public bool IsCompleted(QuizSession session)

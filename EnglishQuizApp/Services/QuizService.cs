@@ -37,13 +37,18 @@ public class QuizService
 
     public int CalculateScore(SubmitQuizRequestDto request)
     {
+        var questionIds = request.Answers.Select(a => a.QuestionId).ToList();
+
+        var questions = _context.Questions
+            .Include(q => q.Answers)
+            .Where(q => questionIds.Contains(q.Id))
+            .ToList();
+
         int correct = 0;
 
         foreach (var answer in request.Answers)
         {
-            var question = _context.Questions
-                .Include(q => q.Answers)
-                .FirstOrDefault(q => q.Id == answer.QuestionId);
+            var question = questions.FirstOrDefault(q => q.Id == answer.QuestionId);
 
             var selected = question?.Answers
                 .FirstOrDefault(a => a.Id == answer.AnswerId);
@@ -54,7 +59,7 @@ public class QuizService
 
         return correct;
     }
-
+    
     private QuestionDto BuildQuestion(
         Question q,
         List<Answer> wrongPool,

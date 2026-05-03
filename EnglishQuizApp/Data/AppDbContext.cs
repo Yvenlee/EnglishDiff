@@ -1,16 +1,17 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using EnglishQuizApp.Models;
 
 namespace EnglishQuizApp.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<AppUser>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
     }
 
-    // Tables
+    // Tables métier
     public DbSet<Question> Questions { get; set; }
     public DbSet<Answer> Answers { get; set; }
     public DbSet<QuizResult> QuizResults { get; set; }
@@ -19,16 +20,17 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // ⚠️ OBLIGATOIRE pour Identity
         base.OnModelCreating(modelBuilder);
 
-        // Relation Question -> Answers (1 -> N)
+        // Question -> Answers
         modelBuilder.Entity<Question>()
             .HasMany(q => q.Answers)
             .WithOne(a => a.Question)
             .HasForeignKey(a => a.QuestionId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // optimisation
+        // constraints
         modelBuilder.Entity<Question>()
             .Property(q => q.Text)
             .IsRequired()
@@ -38,5 +40,10 @@ public class AppDbContext : DbContext
             .Property(a => a.Text)
             .IsRequired()
             .HasMaxLength(300);
-    }   
+    }
+
+    internal void SaveChanges()
+    {
+        throw new NotImplementedException();
+    }
 }

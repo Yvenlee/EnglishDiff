@@ -1,12 +1,24 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using EnglishQuizApp.Data;
+using EnglishQuizApp.Models;
+using EnglishQuizApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DB CONTEXT
+// DB
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// 🔐 IDENTITY
+builder.Services
+    .AddIdentity<AppUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddAuthentication();
+builder.Services.AddScoped<JwtService>();
 
 // CONTROLLERS
 builder.Services.AddControllers();
@@ -15,12 +27,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ADD SEEDER
 builder.Services.AddScoped<QuizSeeder>();
 
 var app = builder.Build();
 
-// PIPELINE
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -30,12 +40,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-
-// EXECUTE SEED AT STARTUP
 using (var scope = app.Services.CreateScope())
 {
     var seeder = scope.ServiceProvider.GetRequiredService<QuizSeeder>();

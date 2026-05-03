@@ -37,9 +37,10 @@ public class ProgressService
         _context.SaveChanges();
     }
 
-    public object GetProgress()
+    public object GetProgress(string userId)
     {
-        var progress = _context.UserProgresses.FirstOrDefault();
+        var progress = _context.UserProgresses
+            .FirstOrDefault(p => p.UserId == userId);
 
         return new
         {
