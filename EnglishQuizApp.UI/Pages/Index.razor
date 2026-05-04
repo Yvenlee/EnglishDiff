@@ -113,6 +113,7 @@ else
     private bool isSubmitted = false;
     private bool isAnswered = false;
     private bool isLoading = true;
+    private bool _initialized = false;
 
     private string sessionId = string.Empty;
 
@@ -121,17 +122,32 @@ else
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-
         var user = authState.User;
 
         if (user?.Identity == null || !user.Identity.IsAuthenticated)
         {
-            NavigationManager.NavigateTo("/login", true);
-            return;
+            NavigationManager.NavigateTo("/login");
         }
+    }
 
-        await LoadQuiz();
-        progress = await QuizService.GetProgress();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // 🔥 Double sécurité
+        if (!firstRender || _initialized)
+            return;
+
+        _initialized = true;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user?.Identity != null && user.Identity.IsAuthenticated)
+        {
+            await LoadQuiz();
+            progress = await QuizService.GetProgress();
+
+            StateHasChanged(); // 🔥 obligatoire
+        }
     }
 
     private async Task LoadQuiz()

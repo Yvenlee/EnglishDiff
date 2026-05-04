@@ -6,21 +6,28 @@ using System.Text;
 using EnglishQuizApp.Data;
 using EnglishQuizApp.Models;
 using EnglishQuizApp.Services;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DB
+// --------------------
+// DATABASE
+// --------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 🔐 IDENTITY (on garde)
+// --------------------
+// IDENTITY
+// --------------------
 builder.Services
     .AddIdentity<AppUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-// 🔥 JWT AUTH (LA CORRECTION PRINCIPALE)
+// --------------------
+// JWT AUTH
+// --------------------
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -28,8 +35,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    var key = Encoding.UTF8.GetBytes(
-        builder.Configuration["Jwt:Key"]!);
+    var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
 
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -37,27 +43,68 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = false,
         ValidateIssuerSigningKey = true,
         ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero,
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 });
 
-// 🔥 AUTHORIZATION
+// --------------------
+// AUTHORIZATION
+// --------------------
 builder.Services.AddAuthorization();
 
+// --------------------
 // SERVICES
+// --------------------
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<QuizSeeder>();
+builder.Services.AddScoped<QuizService>();
+builder.Services.AddScoped<SessionService>();
+builder.Services.AddScoped<ProgressService>();
 
+// --------------------
 // CONTROLLERS
+// --------------------
 builder.Services.AddControllers();
 
-// SWAGGER
+// --------------------
+// SWAGGER + JWT SUPPORT
+// --------------------
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter: Bearer {your token}"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 var app = builder.Build();
 
+// --------------------
 // PIPELINE
+// --------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -67,13 +114,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 🔥 ORDRE IMPORTANT
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// SEED
+// --------------------
+// SEED DATA
+// --------------------
 using (var scope = app.Services.CreateScope())
 {
     var seeder = scope.ServiceProvider.GetRequiredService<QuizSeeder>();

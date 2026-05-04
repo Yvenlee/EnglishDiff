@@ -1,58 +1,64 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace EnglishQuizApp.UI.Services.Auth;
 
 public class CustomAuthStateProvider : AuthenticationStateProvider
 {
-    private readonly ProtectedLocalStorage _storage;
+    private readonly TokenStore _tokenStore;
 
-    public CustomAuthStateProvider(ProtectedLocalStorage storage)
+    public CustomAuthStateProvider(TokenStore tokenStore)
     {
-        _storage = storage;
+        _tokenStore = tokenStore;
     }
 
-    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        string? token = null;
-
-        try
-        {
-            var result = await _storage.GetAsync<string>("token");
-            token = result.Success ? result.Value : null;
-        }
-        catch
-        {
-            // ⚠️ prerendering => JS not ready
-            token = null;
-        }
+        var token = _tokenStore.Get();
 
         if (string.IsNullOrWhiteSpace(token))
         {
-            return new AuthenticationState(
-                new ClaimsPrincipal(new ClaimsIdentity()));
+            var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
+            return Task.FromResult(new AuthenticationState(anonymous));
         }
 
-        var identity = new ClaimsIdentity(new[]
-        {
-            new Claim(ClaimTypes.Name, "user")
-        }, "jwt");
+        var identity = new ClaimsIdentity(
+            new[]
+            {
+                new Claim(ClaimTypes.Name, "user")
+            },
+            "jwt"
+        );
 
-        return new AuthenticationState(new ClaimsPrincipal(identity));
+        var user = new ClaimsPrincipal(identity);
+
+        return Task.FromResult(new AuthenticationState(user));
     }
 
-    public async Task MarkUserAsAuthenticated(string token)
+    public void MarkUserAsAuthenticated(string token)
     {
-        await _storage.SetAsync("token", token);
+        _tokenStore.Set(token);
 
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        var identity = new ClaimsIdentity(
+            new[] { new Claim(ClaimTypes.Name, "user") },
+            "jwt"
+        );
+
+        var user = new ClaimsPrincipal(identity);
+
+        NotifyAuthenticationStateChanged(
+            Task.FromResult(new AuthenticationState(user))
+        );
     }
 
-    public async Task Logout()
+    public void Logout()
     {
-        await _storage.DeleteAsync("token");
+        _tokenStore.Clear();
 
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
+
+        NotifyAuthenticationStateChanged(
+            Task.FromResult(new AuthenticationState(anonymous))
+        );
     }
 }

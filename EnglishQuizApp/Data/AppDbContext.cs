@@ -20,7 +20,6 @@ public class AppDbContext : IdentityDbContext<AppUser>
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // ⚠️ OBLIGATOIRE pour Identity
         base.OnModelCreating(modelBuilder);
 
         // Question -> Answers
@@ -40,10 +39,5 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .Property(a => a.Text)
             .IsRequired()
             .HasMaxLength(300);
-    }
-
-    internal void SaveChanges()
-    {
-        throw new NotImplementedException();
     }
 }

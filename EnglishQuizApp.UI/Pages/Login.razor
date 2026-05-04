@@ -1,5 +1,6 @@
 @page "/login"
-@inject EnglishQuizApp.UI.Services.AuthService AuthService
+@using EnglishQuizApp.UI.Services.Auth
+@inject AuthService AuthService
 @inject NavigationManager Nav
 
 <h3>Login</h3>
@@ -19,25 +20,45 @@
 
 <br />
 
-<button @onclick="HandleLogin">Login</button>
+<button @onclick="HandleLogin" disabled="@isLoading">
+    @(isLoading ? "Loading..." : "Login")
+</button>
 
 @code {
     private string email = "";
     private string password = "";
     private string error = "";
+    private bool isLoading = false;
 
     private async Task HandleLogin()
     {
+        // 🔥 BLOCK DOUBLE CLICK / DOUBLE CALL
+        if (isLoading)
+            return;
+
+        isLoading = true;
         error = "";
 
-        var success = await AuthService.Login(email, password);
-
-        if (!success)
+        try
         {
-            error = "Invalid credentials";
-            return;
-        }
+            var success = await AuthService.Login(email, password);
 
-        Nav.NavigateTo("/", true);
+            if (!success)
+            {
+                error = "Invalid credentials";
+                return;
+            }
+
+            // 🔥 IMPORTANT: navigation replace (évite retour login bug)
+            Nav.NavigateTo("/", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            error = "Error: " + ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 }

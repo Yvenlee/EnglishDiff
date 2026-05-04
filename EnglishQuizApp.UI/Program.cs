@@ -5,30 +5,46 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// --------------------
+// BLAZOR
+// --------------------
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
+// --------------------
 // AUTH CORE
+// --------------------
 builder.Services.AddScoped<ProtectedLocalStorage>();
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+
+builder.Services.AddSingleton<TokenStore>();
+
+builder.Services.AddScoped<CustomAuthStateProvider>();
+
+builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
+    sp.GetRequiredService<CustomAuthStateProvider>());
+
 builder.Services.AddAuthorizationCore();
 
+// --------------------
 // HTTP CLIENTS
-builder.Services.AddHttpClient("Auth", client =>
+// --------------------
+builder.Services.AddHttpClient("Auth", c =>
 {
-    client.BaseAddress = new Uri("http://localhost:5047/");
+    c.BaseAddress = new Uri("http://localhost:5047/");
 });
 
-builder.Services.AddHttpClient("Api", client =>
+builder.Services.AddHttpClient("Api", c =>
 {
-    client.BaseAddress = new Uri("http://localhost:5047/");
+    c.BaseAddress = new Uri("http://localhost:5047/");
 })
 .AddHttpMessageHandler<AuthHeaderHandler>();
 
+// --------------------
 // SERVICES
+// --------------------
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<AuthHeaderHandler>();
 builder.Services.AddScoped<QuizService>();
+builder.Services.AddTransient<AuthHeaderHandler>();
 
 var app = builder.Build();
 
