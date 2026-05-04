@@ -1,0 +1,43 @@
+@page "/login"
+@inject EnglishQuizApp.UI.Services.AuthService AuthService
+@inject NavigationManager Nav
+
+<h3>Login</h3>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <p style="color:red">@error</p>
+}
+
+<div>
+    <input placeholder="Email" @bind="email" />
+</div>
+
+<div>
+    <input placeholder="Password" type="password" @bind="password" />
+</div>
+
+<br />
+
+<button @onclick="HandleLogin">Login</button>
+
+@code {
+    private string email = "";
+    private string password = "";
+    private string error = "";
+
+    private async Task HandleLogin()
+    {
+        error = "";
+
+        var success = await AuthService.Login(email, password);
+
+        if (!success)
+        {
+            error = "Invalid credentials";
+            return;
+        }
+
+        Nav.NavigateTo("/", true);
+    }
+}

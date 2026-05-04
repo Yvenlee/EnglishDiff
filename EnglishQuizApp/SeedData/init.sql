@@ -1,1 +1,1 @@
-SELECT * FROM Questions ORDER BY Id DESC
+SELECT * FROM UserProgresses ORDER BY Id DESC

@@ -1,7 +1,11 @@
 ﻿@page "/"
 
+@attribute [Authorize]
+
 @using EnglishQuizApp.UI.Models
 @inject EnglishQuizApp.UI.Services.QuizService QuizService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
 
 <h2>English Quiz</h2>
 
@@ -9,7 +13,7 @@
 {
     <p>Loading quiz...</p>
 }
-else if (questions == null || !questions.Any())
+else if (questions == null || questions.Count == 0)
 {
     <p>No questions available.</p>
 }
@@ -116,6 +120,16 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+
+        var user = authState.User;
+
+        if (user?.Identity == null || !user.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/login", true);
+            return;
+        }
+
         await LoadQuiz();
         progress = await QuizService.GetProgress();
     }
@@ -124,9 +138,7 @@ else
     {
         isLoading = true;
 
-        var userId = "demo-user";
-
-        var quiz = await QuizService.GetQuiz(userId);
+        var quiz = await QuizService.GetQuiz();
 
         questions = quiz.Questions ?? new List<QuestionDto>();
         sessionId = quiz.SessionId;
