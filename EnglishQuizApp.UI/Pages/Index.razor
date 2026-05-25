@@ -3,6 +3,8 @@
 @attribute [Authorize]
 
 @using EnglishQuizApp.UI.Models
+@using Microsoft.AspNetCore.WebUtilities
+
 @inject EnglishQuizApp.UI.Services.QuizService QuizService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
@@ -11,14 +13,11 @@
 
 @if (isLoading)
 {
-    <p>Loading quiz...</p>
-}
-else if (questions == null || questions.Count == 0)
-{
-    <p>No questions available.</p>
+    <p>Loading...</p>
 }
 else
 {
+    <!--Player Progress-->
     @if (progress != null)
     {
         <div>
@@ -26,98 +25,58 @@ else
             <br />
             <b>XP:</b> @progress.TotalXp
         </div>
+
         <hr />
     }
 
-    <p>Question @(currentIndex + 1) / @questions.Count</p>
+    <h4>Start a new quiz</h4>
 
-    <p><b>@CurrentQuestion.Text</b></p>
+    <div>
+        <label>Category</label>
+        <select class="form-control" @bind="selectedCategory">
+            <option value="">-- Any category --</option>
 
-    @foreach (var a in CurrentQuestion.Answers)
-    {
-        var isSelected =
-            selectedAnswers.TryGetValue(CurrentQuestion.Id, out var selected)
-            && selected == a.Id;
-
-        <div>
-            <label>
-                <input type="radio"
-                       name="@($"q_{CurrentQuestion.Id}")"
-                       disabled="@isAnswered"
-                       checked="@isSelected"
-                       @onchange="() => SelectAnswer(CurrentQuestion.Id, a.Id)" />
-                @a.Text
-            </label>
-        </div>
-    }
+            @foreach (var c in meta.Categories)
+            {
+                <option value="@c">@c</option>
+            }
+        </select>
+    </div>
 
     <br />
 
-    @if (!isSubmitted)
-    {
-        @if (currentIndex < questions.Count - 1)
-        {
-            <button disabled="@(!isAnswered)" @onclick="Next">
-                Next
-            </button>
-        }
-        else
-        {
-            <button disabled="@(!isAnswered)" @onclick="SubmitQuiz">
-                Finish
-            </button>
-        }
-    }
+    <div>
+        <label>Difficulty</label>
+        <select class="form-control" @bind="selectedDifficulty">
 
-    <p>Progress: @ProgressPercent%</p>
+            <option value="">-- Any difficulty --</option>
 
-    @if (result != null)
-    {
-        <hr />
-        <h3>Result</h3>
-
-        <p><b>@result.ScorePercent %</b></p>
-
-        <p>@result.CorrectAnswers / @result.TotalQuestions</p>
-
-        <p>
-            @if (result.ScorePercent >= 100)
+            @foreach (var d in meta.Difficulties)
             {
-                <span>Perfect !</span>
+                <option value="@d">Level @d</option>
             }
-            else if (result.ScorePercent >= 80)
-            {
-                <span>Excellent</span>
-            }
-            else if (result.ScorePercent >= 50)
-            {
-                <span>Keep Going !</span>
-            }
-            else
-            {
-                <span>Keep practicing</span>
-            }
-        </p>
 
-        <button @onclick="Restart">Restart</button>
-    }
+        </select>
+    </div>
+
+    <br />
+
+    <button class="btn btn-primary"
+            disabled="@(!CanStart)"
+            @onclick="StartQuiz">
+        Start Quiz
+    </button>
 }
 
 @code {
 
-    private List<QuestionDto>? questions;
-    private int currentIndex = 0;
-    private ScoreResultDto? result;
-    private ProgressDto? progress;
+    private QuizMetaDto meta = new();
 
-    private bool isSubmitted = false;
-    private bool isAnswered = false;
+    private string? selectedCategory = null;
+    private int? selectedDifficulty = null;
+    private ProgressDto? progress;
     private bool isLoading = true;
     private bool _initialized = false;
-
-    private string sessionId = string.Empty;
-
-    private Dictionary<int, int> selectedAnswers = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -132,92 +91,49 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // 🔥 Double sécurité
         if (!firstRender || _initialized)
             return;
 
         _initialized = true;
 
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (user?.Identity != null && user.Identity.IsAuthenticated)
-        {
-            await LoadQuiz();
-            progress = await QuizService.GetProgress();
-
-            StateHasChanged(); // 🔥 obligatoire
-        }
-    }
-
-    private async Task LoadQuiz()
-    {
         isLoading = true;
 
-        var quiz = await QuizService.GetQuiz();
+        // LOAD META FROM DB
+        meta = await QuizService.GetMeta();
 
-        questions = quiz.Questions ?? new List<QuestionDto>();
-        sessionId = quiz.SessionId;
-
-        currentIndex = 0;
-        selectedAnswers = new Dictionary<int, int>();
-        isAnswered = false;
-        isSubmitted = false;
-        result = null;
+        // LOAD USER PROGRESS
+        progress = await QuizService.GetProgress();
 
         isLoading = false;
+
+        StateHasChanged();
     }
 
-    private QuestionDto CurrentQuestion => questions![currentIndex];
+    private bool CanStart =>
+        true;
 
-    private string ProgressPercent =>
-        questions == null || questions.Count == 0
-            ? "0"
-            : $"{((double)(currentIndex + (isAnswered ? 1 : 0)) / questions.Count) * 100:0}";
-
-    private void SelectAnswer(int questionId, int answerId)
+    private void StartQuiz()
     {
-        if (isAnswered) return;
+        var cat = string.IsNullOrWhiteSpace(selectedCategory)
+            ? null
+            : selectedCategory;
 
-        selectedAnswers[questionId] = answerId;
-        isAnswered = true;
-    }
+        var diff = selectedDifficulty.HasValue
+            ? selectedDifficulty.Value.ToString()
+            : null;
 
-    private void Next()
-    {
-        if (!isAnswered) return;
+        var url = $"/quiz?";
 
-        if (currentIndex < questions!.Count - 1)
-        {
-            currentIndex++;
-            isAnswered = false;
-        }
-    }
+        var query = new List<string>();
 
-    private async Task SubmitQuiz()
-    {
-        if (isSubmitted) return;
+        if (!string.IsNullOrWhiteSpace(cat))
+            query.Add($"category={cat}");
 
-        isSubmitted = true;
+        if (selectedDifficulty.HasValue)
+            query.Add($"difficulty={selectedDifficulty.Value}");
 
-        var payload = questions!.Select(q =>
-        {
-            selectedAnswers.TryGetValue(q.Id, out var answerId);
+        url += string.Join("&", query);
 
-            return new SubmitAnswerDto
-            {
-                QuestionId = q.Id,
-                AnswerId = answerId
-            };
-        }).ToList();
-
-        result = await QuizService.Submit(sessionId, payload);
-
-        progress = await QuizService.GetProgress();
-    }
-
-    private async Task Restart()
-    {
-        await LoadQuiz();
+        NavigationManager.NavigateTo(url);
     }
 }

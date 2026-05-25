@@ -1,0 +1,54 @@
+# 🇬🇧 English Quiz App
+
+## Démo de l’application
+
+<p align="center">
+  <video src="./EnglishQuizAppDemo.mp4"
+         controls
+         width="100%">
+  </video>
+</p>
+
+<p align="center">
+  <a href="./EnglishQuizAppDemo.mp4"> Télécharger la vidéo</a>
+</p>
+
+---
+
+## Description
+
+**English Quiz App** est une application d’apprentissage de l’anglais conçue pour s’entraîner de manière ludique à travers des quiz variés.
+
+Le projet est composé de deux parties :
+- **EnglishQuizApp** (API)
+- **EnglishQuizApp.UI** (Interface utilisateur)
+
+Cette séparation permet une meilleure organisation du code et une architecture plus lisible.
+
+---
+
+## Contexte
+
+Beaucoup de personnes rencontrent des difficultés avec l’anglais (moi y compris).  
+Cette application a été créée dans le but de progresser en anglais tout en enrichissant sa culture générale, grâce à des quiz sur différents thèmes et niveaux de difficulté.
+
+---
+
+## Fonctionnalités
+
+- Système de quiz interactif  
+- Choix de la difficulté et des catégories  
+- Authentification simple des utilisateurs  
+- Base de données pour sauvegarde des données  
+
+---
+
+## Technologies utilisées
+
+- C#  
+- .NET  
+- Blazor  
+- Entity Framework  
+- SQL Server  
+- HTML / CSS  
+- Visual Studio Code

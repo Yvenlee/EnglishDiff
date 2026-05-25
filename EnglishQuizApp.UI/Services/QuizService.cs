@@ -16,12 +16,11 @@ public class QuizService
         _tokenStore = tokenStore;
     }
 
-    // 🔥 IMPORTANT: assure toujours un header propre
     private void AttachToken()
     {
         var token = _tokenStore.Get();
 
-        Console.WriteLine($"🎯 QuizService TOKEN: {token}");
+        // Console.WriteLine($"QuizService TOKEN: {token}");
 
         _http.DefaultRequestHeaders.Authorization = null;
 
@@ -32,26 +31,40 @@ public class QuizService
         }
     }
 
-    public async Task<QuizResponseDto> GetQuiz()
+public async Task<QuizResponseDto> GetQuiz(
+    string? category,
+    int? difficulty,
+    int count = 5)
+{
+    Console.WriteLine("QUIZ CALL");
+
+    try
     {
-        Console.WriteLine("📌 QUIZ CALL");
+        AttachToken();
 
-        try
+        var query = new List<string>
         {
-            AttachToken();
+            $"count={count}"
+        };
 
-            var result = await _http.GetFromJsonAsync<QuizResponseDto>(
-                "api/quiz/random?count=5"
-            );
+        if (!string.IsNullOrWhiteSpace(category))
+            query.Add($"category={category}");
 
-            return result ?? new QuizResponseDto();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ GET QUIZ ERROR: {ex.Message}");
-            return new QuizResponseDto();
-        }
+        if (difficulty.HasValue)
+            query.Add($"difficulty={difficulty.Value}");
+
+        var url = "api/quiz/random?" + string.Join("&", query);
+
+        var result = await _http.GetFromJsonAsync<QuizResponseDto>(url);
+
+        return result ?? new QuizResponseDto();
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"GET QUIZ ERROR: {ex.Message}");
+        return new QuizResponseDto();
+    }
+}
 
     public async Task<ScoreResultDto> Submit(string sessionId, List<SubmitAnswerDto> answers)
     {
@@ -69,7 +82,7 @@ public class QuizService
 
             if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"❌ SUBMIT HTTP ERROR: {response.StatusCode}");
+                Console.WriteLine($"SUBMIT HTTP ERROR: {response.StatusCode}");
                 return new ScoreResultDto();
             }
 
@@ -78,14 +91,23 @@ public class QuizService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ SUBMIT ERROR: {ex.Message}");
+            Console.WriteLine($"SUBMIT ERROR: {ex.Message}");
             return new ScoreResultDto();
         }
     }
 
+    public async Task<QuizMetaDto> GetMeta()
+    {
+        AttachToken();
+
+        var result = await _http.GetFromJsonAsync<QuizMetaDto>("api/quiz/meta");
+
+        return result ?? new QuizMetaDto();
+    }
+
     public async Task<ProgressDto> GetProgress()
     {
-        Console.WriteLine("📌 PROGRESS CALL");
+        Console.WriteLine("PROGRESS CALL");
 
         try
         {
@@ -99,7 +121,7 @@ public class QuizService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ PROGRESS ERROR: {ex.Message}");
+            Console.WriteLine($"PROGRESS ERROR: {ex.Message}");
             return new ProgressDto();
         }
     }

@@ -37,13 +37,42 @@ public class QuizController : ControllerBase
         return userId;
     }
 
+    [HttpGet("meta")]
+    public IActionResult GetMeta()
+    {
+        var categories = _context.Questions
+            .Select(q => q.Category)
+            .Distinct()
+            .OrderBy(x => x)
+            .ToList();
+
+        var difficulties = _context.Questions
+            .Select(q => q.Difficulty)
+            .Distinct()
+            .OrderBy(x => x)
+            .ToList();
+
+        return Ok(new
+        {
+            categories,
+            difficulties
+        });
+    }
+
     [HttpGet("random")]
-    public IActionResult GetRandom(int count)
+    public IActionResult GetRandom(
+        string? category,
+        int? difficulty,
+        int count = 5
+    )
     {
         var userId = GetUserId();
-
         var session = _sessionService.CreateSession(userId);
-        var questions = _quizService.GenerateQuestions(count);
+        var questions = _quizService.GenerateQuestions(
+            count,
+            category,
+            difficulty
+        );
 
         return Ok(new
         {

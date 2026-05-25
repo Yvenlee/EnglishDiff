@@ -1,0 +1,160 @@
+@page "/quiz"
+
+@attribute [Authorize]
+
+@inject QuizService QuizService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+<h2>Quiz</h2>
+
+@if (isLoading)
+{
+    <p>Loading quiz...</p>
+}
+else if (questions == null || questions.Count == 0)
+{
+    <p>No questions available.</p>
+}
+else
+{
+    <p>Question @(currentIndex + 1) / @questions.Count</p>
+
+    <p><b>@CurrentQuestion.Text</b></p>
+
+    @foreach (var a in CurrentQuestion.Answers)
+    {
+        var isSelected =
+            selectedAnswers.TryGetValue(CurrentQuestion.Id, out var selected)
+            && selected == a.Id;
+
+        <div>
+            <label>
+                <input type="radio"
+                       name="@($"q_{CurrentQuestion.Id}")"
+                       disabled="@isAnswered"
+                       checked="@isSelected"
+                       @onchange="() => SelectAnswer(CurrentQuestion.Id, a.Id)" />
+                @a.Text
+            </label>
+        </div>
+    }
+
+    <br />
+
+    @if (!isSubmitted)
+    {
+        @if (currentIndex < questions.Count - 1)
+        {
+            <button disabled="@(!isAnswered)" @onclick="Next">Next</button>
+        }
+        else
+        {
+            <button disabled="@(!isAnswered)" @onclick="SubmitQuiz">Finish</button>
+        }
+    }
+
+    @if (result != null)
+    {
+        <hr />
+        <h3>Result</h3>
+
+        <p><b>@result.ScorePercent %</b></p>
+        <p>@result.CorrectAnswers / @result.TotalQuestions</p>
+
+        <button @onclick="Restart">Restart</button>
+    }
+}
+
+@code {
+
+    private List<QuestionDto>? questions;
+    private int currentIndex = 0;
+
+    private string? category;
+    private int? difficulty;
+
+    private string sessionId = "";
+
+    private bool isLoading = true;
+    private bool isAnswered = false;
+    private bool isSubmitted = false;
+
+    private ScoreResultDto? result;
+
+    private Dictionary<int, int> selectedAnswers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("category", out var cat))
+            category = string.IsNullOrWhiteSpace(cat) ? null : cat.ToString();
+
+        if (query.TryGetValue("difficulty", out var diff))
+        {
+            if (int.TryParse(diff, out var d))
+                difficulty = d;
+            else
+                difficulty = null;
+        }
+
+        await LoadQuiz();
+    }
+
+    private async Task LoadQuiz()
+    {
+        isLoading = true;
+
+        var quiz = await QuizService.GetQuiz(category, difficulty, 5);
+
+        questions = quiz.Questions;
+        sessionId = quiz.SessionId;
+
+        isLoading = false;
+    }
+
+    private QuestionDto CurrentQuestion => questions![currentIndex];
+
+    private void SelectAnswer(int questionId, int answerId)
+    {
+        selectedAnswers[questionId] = answerId;
+        isAnswered = true;
+    }
+
+    private void Next()
+    {
+        currentIndex++;
+        isAnswered = false;
+    }
+
+    private async Task SubmitQuiz()
+    {
+        isSubmitted = true;
+
+        var payload = questions!.Select(q =>
+        {
+            selectedAnswers.TryGetValue(q.Id, out var answerId);
+
+            return new SubmitAnswerDto
+            {
+                QuestionId = q.Id,
+                AnswerId = answerId
+            };
+        }).ToList();
+
+        result = await QuizService.Submit(sessionId, payload);
+    }
+
+    private async Task Restart()
+    {
+        currentIndex = 0;
+        selectedAnswers.Clear();
+        isAnswered = false; 
+        isSubmitted = false;
+        result = null;
+
+        await LoadQuiz();
+    }
+}

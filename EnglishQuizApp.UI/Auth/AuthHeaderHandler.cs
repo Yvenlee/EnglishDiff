@@ -17,8 +17,8 @@ public class AuthHeaderHandler : DelegatingHandler
     {
         var token = _tokenStore.Get();
 
-        Console.WriteLine("🔐 AuthHeaderHandler called");
-        Console.WriteLine($"TOKEN: {token}");
+        Console.WriteLine("AuthHeaderHandler called");
+        // Console.WriteLine($"TOKEN: {token}");
 
         if (!string.IsNullOrWhiteSpace(token))
         {

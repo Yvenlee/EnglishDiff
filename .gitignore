@@ -14,3 +14,6 @@
 # OS
 .DS_Store
 Thumbs.db
+
+EnglishQuizApp\appsettings.json
+EnglishQuizApp\appsettings.Development.json

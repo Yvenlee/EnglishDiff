@@ -37,12 +37,31 @@ public class AuthService
         if (result?.Token is null)
             return false;
 
-        // 🔥 IMPORTANT : synchro complète
         _tokenStore.Set(result.Token);
         _authProvider.MarkUserAsAuthenticated(result.Token);
 
-        Console.WriteLine("🟢 TOKEN STORED SUCCESSFULLY");
+        Console.WriteLine("TOKEN STORED SUCCESSFULLY");
 
+        return true;
+    }
+
+    public async Task<bool> Register(string email, string password)
+    {
+        var client = _factory.CreateClient("Auth");
+
+        var response = await client.PostAsJsonAsync("api/auth/register", new
+        {
+            email,
+            password
+        });
+
+        if (!response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Registration failed");
+            return false;
+        }
+
+        Console.WriteLine("User registered successfully");
         return true;
     }
 }

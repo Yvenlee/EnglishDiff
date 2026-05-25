@@ -13,87 +13,125 @@ public class QuizService
         _context = context;
     }
 
-    public List<QuestionDto> GenerateQuestions(int count)
+    public List<QuestionDto> GenerateQuestions(
+        int count,
+        string? category,
+        int? difficulty)
     {
-        var allWrongAnswers = _context.Answers
+        // 1. Récupérer les questions (filtrées par catégorie/difficulté si spécifié)
+        var questionsQuery = _context.Questions
+            .AsNoTracking()
+            .Include(q => q.Answers)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            questionsQuery = questionsQuery.Where(q => q.Category == category);
+        }
+
+        if (difficulty.HasValue)
+        {
+            questionsQuery = questionsQuery.Where(q => q.Difficulty == difficulty.Value);
+        }
+
+        var questions = questionsQuery
+            .OrderBy(x => Guid.NewGuid())
+            .Take(count)
+            .ToList();
+
+        if (!questions.Any())
+        {
+            return new List<QuestionDto>();
+        }
+
+        // 2. Récupérer TOUTES les mauvaises réponses (pour toutes les catégories)
+        // On filtrera plus tard dans BuildQuestion pour matcher la catégorie de chaque question.
+        var wrongAnswers = _context.Answers
             .AsNoTracking()
             .Where(a => !a.IsCorrect)
             .Include(a => a.Question)
             .ToList();
 
-        var questions = _context.Questions
-            .AsNoTracking()
-            .Include(q => q.Answers)
-            .OrderBy(x => Guid.NewGuid())
-            .Take(count)
-            .ToList();
+        // 3. Construire les questions avec leurs réponses
+        var usedWrongAnswers = new HashSet<string>();
+        var result = new List<QuestionDto>();
 
-        var used = new HashSet<string>();
+        foreach (var question in questions)
+        {
+            var questionDto = BuildQuestion(question, wrongAnswers, usedWrongAnswers);
+            result.Add(questionDto);
+        }
 
-        return questions.Select(q =>
-            BuildQuestion(q, allWrongAnswers, used)
-        ).ToList();
+        return result;
     }
 
     public int CalculateScore(SubmitQuizRequestDto request)
     {
         var questionIds = request.Answers.Select(a => a.QuestionId).ToList();
-
         var questions = _context.Questions
             .Include(q => q.Answers)
             .Where(q => questionIds.Contains(q.Id))
             .ToList();
 
         int correct = 0;
-
         foreach (var answer in request.Answers)
         {
             var question = questions.FirstOrDefault(q => q.Id == answer.QuestionId);
-
-            var selected = question?.Answers
-                .FirstOrDefault(a => a.Id == answer.AnswerId);
-
+            var selected = question?.Answers.FirstOrDefault(a => a.Id == answer.AnswerId);
             if (selected?.IsCorrect == true)
+            {
                 correct++;
+            }
         }
-
         return correct;
     }
-    
-    private QuestionDto BuildQuestion(
-        Question q,
-        List<Answer> wrongPool,
-        HashSet<string> used)
-    {
-        var correct = q.Answers.First(a => a.IsCorrect);
 
-        var wrong = wrongPool
+    private QuestionDto BuildQuestion(
+        Question question,
+        List<Answer> wrongPool,
+        HashSet<string> usedWrongAnswers)
+    {
+        var correctAnswer = question.Answers.First(a => a.IsCorrect);
+
+        // 🔥 Filtrer les mauvaises réponses :
+        // - Pas de la même question
+        // - Pas déjà utilisées
+        // - Pas le même texte que la bonne réponse
+        // - DE LA MÊME CATÉGORIE QUE LA QUESTION (même en mode global)
+        var candidateWrongAnswers = wrongPool
             .Where(a =>
-                a.QuestionId != q.Id &&
-                !used.Contains(a.Text) &&
-                a.Text != correct.Text)
+                a.QuestionId != question.Id &&
+                !usedWrongAnswers.Contains(a.Text) &&
+                a.Text != correctAnswer.Text &&
+                a.Question.Category == question.Category // 👈 Clé : toujours la même catégorie
+            )
+            .ToList();
+
+        // Prendre 2 mauvaises réponses aléatoires (ou moins si pas assez de candidates)
+        var wrongAnswers = candidateWrongAnswers
             .OrderBy(_ => _random.Next())
             .Take(2)
             .ToList();
 
-        foreach (var w in wrong)
-            used.Add(w.Text);
+        // Ajouter les réponses utilisées au set
+        foreach (var wrong in wrongAnswers)
+        {
+            usedWrongAnswers.Add(wrong.Text);
+        }
 
         var answers = new List<AnswerDto>
         {
-            new AnswerDto { Id = correct.Id, Text = correct.Text }
+            new AnswerDto { Id = correctAnswer.Id, Text = correctAnswer.Text }
         };
+        answers.AddRange(wrongAnswers.Select(a => new AnswerDto { Id = a.Id, Text = a.Text }));
 
-        answers.AddRange(wrong.Select(a => new AnswerDto
-        {
-            Id = a.Id,
-            Text = a.Text
-        }));
-
+        // Mélanger les réponses
         return new QuestionDto
         {
-            Id = q.Id,
-            Text = q.Text,
+            Id = question.Id,
+            Text = question.Text,
+            Category = question.Category,
+            Difficulty = question.Difficulty,
             Answers = answers.OrderBy(_ => _random.Next()).ToList()
         };
     }

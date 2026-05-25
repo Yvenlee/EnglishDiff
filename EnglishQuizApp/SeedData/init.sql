@@ -1,1 +1,0 @@
-SELECT * FROM UserProgresses ORDER BY Id DESC

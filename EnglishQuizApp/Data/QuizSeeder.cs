@@ -1,23 +1,41 @@
 using System.Text.Json;
 using EnglishQuizApp.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using EnglishQuizApp.Models;
 
 public class QuizSeeder
 {
     private readonly AppDbContext _context;
+    private readonly IConfiguration _configuration;
 
-    public QuizSeeder(AppDbContext context)
+    public QuizSeeder(AppDbContext context, IConfiguration configuration)
     {
         _context = context;
+        _configuration = configuration;
     }
 
     public void SeedFromJson()
     {
-        if (_context.Questions.Any())
+        // Condition via appsettings.json
+        if (!_configuration.GetValue<bool>("SeedDatabase"))
+        {
             return;
+        }
+
+        // Sécurité: éviter double seed
+        if (_context.Questions.Any())
+        {
+            return;
+        }
 
         var path = Path.Combine(AppContext.BaseDirectory, "SeedData/questions.json");
+
+        if (!File.Exists(path))
+        {
+            return;
+        }
+
         var json = File.ReadAllText(path);
 
         var options = new JsonSerializerOptions
@@ -26,8 +44,8 @@ public class QuizSeeder
         };
 
         var questions = JsonSerializer.Deserialize<List<QuestionSeed>>(json, options);
+
         Console.WriteLine($"Loaded: {questions?.Count}");
-        Console.WriteLine($"First text: {questions?.FirstOrDefault()?.Text}");
 
         if (questions == null || !questions.Any())
             return;
@@ -38,7 +56,6 @@ public class QuizSeeder
 
             if (correctCount != 1)
             {
-                Console.WriteLine($"❌ Skipped: {q.Text}");
                 continue;
             }
 
@@ -47,7 +64,6 @@ public class QuizSeeder
                 Text = q.Text,
                 Category = q.Category,
                 Difficulty = q.Difficulty,
-
                 Answers = q.Answers.Select(a => new Answer
                 {
                     Text = a.Text,
@@ -57,5 +73,7 @@ public class QuizSeeder
         }
 
         _context.SaveChanges();
+
+        Console.WriteLine("Seeding completed.");
     }
 }
