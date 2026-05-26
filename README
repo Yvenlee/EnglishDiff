@@ -1,6 +1,14 @@
 # 🇬🇧 English Quiz App
 
-![Demo de l'application](./EnglishQuizAppDemo.gif)
+<p align="center">
+  <img src="./EnglishQuizAppDemo.gif" alt="Demo English Quiz App" width="900"/>
+</p>
+
+<p align="center">
+  Application de quiz en anglais développée avec .NET & Blazor
+</p>
+
+---
 
 ## Description
 
