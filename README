@@ -1,37 +1,48 @@
+# 🇬🇧 English Quiz App
+
+![Demo de l'application](./EnglishQuizAppDemo.gif)
+
 ## Description
 
-**English Quiz App** est une application d’apprentissage de l’anglais conçue pour s’entraîner de manière ludique à travers des quiz variés.
+**English Quiz App** est une application d’apprentissage de l’anglais permettant de progresser de manière ludique grâce à des quiz interactifs.
 
-Le projet est composé de deux parties :
-- **EnglishQuizApp** (API)
-- **EnglishQuizApp.UI** (Interface utilisateur)
+Le projet est séparé en deux parties :
 
-Cette séparation permet une meilleure organisation du code et une architecture plus lisible.
+- **EnglishQuizApp** → API backend
+- **EnglishQuizApp.UI** → interface utilisateur
+
+Cette architecture permet une meilleure organisation du code, une séparation claire des responsabilités et une maintenance plus simple du projet.
 
 ---
 
-## Contexte
+## Objectif du projet
 
-Beaucoup de personnes rencontrent des difficultés avec l’anglais (moi y compris).  
-Cette application a été créée dans le but de progresser en anglais tout en enrichissant sa culture générale, grâce à des quiz sur différents thèmes et niveaux de difficulté.
+L’anglais est une compétence essentielle dans le développement informatique, mais il peut être difficile à pratiquer régulièrement.
+
+J’ai créé cette application pour améliorer mon anglais tout en développant mes compétences en développement full-stack avec l’écosystème .NET.
+
+L’objectif est de proposer une expérience simple, moderne et motivante autour de quiz sur différents thèmes et niveaux de difficulté.
 
 ---
 
 ## Fonctionnalités
 
-- Système de quiz interactif  
-- Choix de la difficulté et des catégories  
-- Authentification simple des utilisateurs  
-- Base de données pour sauvegarde des données  
+- Quiz interactifs
+- Questions à choix multiples
+- Sélection de catégories
+- Gestion des niveaux de difficulté
+- Authentification utilisateur
+- Sauvegarde des données avec base SQL
+- Architecture séparée API / UI
 
 ---
 
 ## Technologies utilisées
 
-- C#  
-- .NET  
-- Blazor  
-- Entity Framework  
-- SQL Server  
-- HTML / CSS  
-- Visual Studio Code
+- **C#**
+- **.NET**
+- **Blazor**
+- **Entity Framework Core**
+- **SQL Server**
+- **HTML / CSS**
+- **Visual Studio Code**
