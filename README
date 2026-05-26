@@ -1,15 +1,7 @@
 # 🇬🇧 English Quiz App
 
-<p align="center">
-  <img src="./EnglishQuizAppDemo.gif" alt="Demo English Quiz App" width="900"/>
-</p>
-
-<p align="center">
-  Application de quiz en anglais développée avec .NET & Blazor
-</p>
-
----
-
+Un fichier Gif est disponaible à la racine du projet pour une démonstration rapide de l’application.
+Il se nomme `EnglishQuizAppDemo.gif`
 ## Description
 
 **English Quiz App** est une application d’apprentissage de l’anglais permettant de progresser de manière ludique grâce à des quiz interactifs.
