@@ -2,47 +2,44 @@
 @inject AuthService AuthService
 @inject NavigationManager NavigationManager
 
-<h3>Register</h3>
+<div class="container py-5 d-flex justify-content-center">
 
-@if (!string.IsNullOrEmpty(errorMessage))
-{
-    <div class="alert alert-danger">
-        @errorMessage
+    <div class="card shadow-sm w-100" style="max-width: 450px;">
+        <div class="card-body">
+
+            <h3 class="text-center mb-4">Create account</h3>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label">Nickname</label>
+                <input class="form-control" @bind="email" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" @bind="password" />
+
+                <small class="text-muted d-block mt-2">
+                    Must contain 8+ chars, uppercase, lowercase, number, special character
+                </small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Confirm password</label>
+                <input type="password" class="form-control" @bind="confirmPassword" />
+            </div>
+
+            <button class="btn btn-primary w-100" @onclick="HandleRegister">
+                Register
+            </button>
+
+        </div>
     </div>
-}
-
-<div class="form-group">
-    <label>Nickname</label>
-    <input class="form-control" @bind="email" />
 </div>
-
-<div class="form-group">
-    <label>Password</label>
-    <input type="password" class="form-control" @bind="password" />
-    
-    <!--Good Auth-->
-    <small style="color:gray;">
-        Password must contain:
-        <ul>
-            <li>At least 8 characters</li>
-            <li>1 uppercase letter</li>
-            <li>1 lowercase letter</li>
-            <li>1 number</li>
-            <li>1 special character</li>
-        </ul>
-    </small>
-</div>
-
-<div class="form-group">
-    <label>Confirm Password</label>
-    <input type="password" class="form-control" @bind="confirmPassword" />
-</div>
-
-<br />
-
-<button class="btn btn-primary" @onclick="HandleRegister">
-    Register
-</button>
 
 @code {
     private string email = "";
@@ -60,33 +57,13 @@
             return;
         }
 
-        if (password.Length < 8)
+        if (password.Length < 8 ||
+            !password.Any(char.IsUpper) ||
+            !password.Any(char.IsLower) ||
+            !password.Any(char.IsDigit) ||
+            !password.Any(ch => !char.IsLetterOrDigit(ch)))
         {
-            errorMessage = "Password must contain at least 8 characters.";
-            return;
-        }
-
-        if (!password.Any(char.IsUpper))
-        {
-            errorMessage = "Password must contain at least 1 uppercase letter.";
-            return;
-        }
-
-        if (!password.Any(char.IsLower))
-        {
-            errorMessage = "Password must contain at least 1 lowercase letter.";
-            return;
-        }
-
-        if (!password.Any(char.IsDigit))
-        {
-            errorMessage = "Password must contain at least 1 number.";
-            return;
-        }
-
-        if (!password.Any(ch => !char.IsLetterOrDigit(ch)))
-        {
-            errorMessage = "Password must contain at least 1 special character.";
+            errorMessage = "Password does not meet requirements.";
             return;
         }
 
@@ -95,13 +72,9 @@
             var result = await AuthService.Register(email, password);
 
             if (result)
-            {
                 NavigationManager.NavigateTo("/login");
-            }
             else
-            {
-                errorMessage = "Registration failed. Email may already exist.";
-            }
+                errorMessage = "Registration failed.";
         }
         catch (Exception ex)
         {

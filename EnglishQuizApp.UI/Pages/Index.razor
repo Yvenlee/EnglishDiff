@@ -1,79 +1,82 @@
 ﻿@page "/"
-
 @attribute [Authorize]
-
-@using EnglishQuizApp.UI.Models
-@using Microsoft.AspNetCore.WebUtilities
-
 @inject EnglishQuizApp.UI.Services.QuizService QuizService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
 
-<h2>English Quiz</h2>
+<div class="container py-5">
 
-@if (isLoading)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <!--Player Progress-->
-    @if (progress != null)
+    <div class="text-center mb-4">
+        <h1 class="fw-bold">English Quiz</h1>
+        <p class="text-muted">Test your English and improve your level</p>
+    </div>
+
+    @if (isLoading)
     {
-        <div>
-            <b>Level:</b> @progress.Level
-            <br />
-            <b>XP:</b> @progress.TotalXp
+        <div class="text-center">
+            <div class="spinner-border"></div>
         </div>
-
-        <hr />
     }
+    else
+    {
+        @if (progress != null)
+        {
+            <div class="card shadow-sm mb-4">
+                <div class="card-body d-flex justify-content-between">
+                    <div>
+                        <h5 class="mb-1">Your Progress</h5>
+                        <small class="text-muted">Keep going!</small>
+                    </div>
+                    <div class="text-end">
+                        <div><b>Level:</b> @progress.Level</div>
+                        <div><b>XP:</b> @progress.TotalXp</div>
+                    </div>
+                </div>
+            </div>
+        }
 
-    <h4>Start a new quiz</h4>
+        <div class="card shadow-sm">
+            <div class="card-body">
 
-    <div>
-        <label>Category</label>
-        <select class="form-control" @bind="selectedCategory">
-            <option value="">-- Any category --</option>
+                <h4 class="mb-3">Start a new quiz</h4>
 
-            @foreach (var c in meta.Categories)
-            {
-                <option value="@c">@c</option>
-            }
-        </select>
-    </div>
+                <div class="mb-3">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" @bind="selectedCategory">
+                        <option value="">Any category</option>
+                        @foreach (var c in meta.Categories)
+                        {
+                            <option value="@c">@c</option>
+                        }
+                    </select>
+                </div>
 
-    <br />
+                <div class="mb-3">
+                    <label class="form-label">Difficulty</label>
+                    <select class="form-select" @bind="selectedDifficulty">
+                        <option value="">Any difficulty</option>
+                        @foreach (var d in meta.Difficulties)
+                        {
+                            <option value="@d">Level @d</option>
+                        }
+                    </select>
+                </div>
 
-    <div>
-        <label>Difficulty</label>
-        <select class="form-control" @bind="selectedDifficulty">
+                <button class="btn btn-primary w-100"
+                        disabled="@(!CanStart)"
+                        @onclick="StartQuiz">
+                    Start Quiz
+                </button>
 
-            <option value="">-- Any difficulty --</option>
-
-            @foreach (var d in meta.Difficulties)
-            {
-                <option value="@d">Level @d</option>
-            }
-
-        </select>
-    </div>
-
-    <br />
-
-    <button class="btn btn-primary"
-            disabled="@(!CanStart)"
-            @onclick="StartQuiz">
-        Start Quiz
-    </button>
-}
+            </div>
+        </div>
+    }
+</div>
 
 @code {
-
     private QuizMetaDto meta = new();
-
-    private string? selectedCategory = null;
-    private int? selectedDifficulty = null;
+    private string? selectedCategory;
+    private int? selectedDifficulty;
     private ProgressDto? progress;
     private bool isLoading = true;
     private bool _initialized = false;
@@ -91,46 +94,30 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || _initialized)
-            return;
+        if (!firstRender || _initialized) return;
 
         _initialized = true;
-
         isLoading = true;
 
-        // LOAD META FROM DB
         meta = await QuizService.GetMeta();
-
-        // LOAD USER PROGRESS
         progress = await QuizService.GetProgress();
 
         isLoading = false;
-
         StateHasChanged();
     }
 
-    private bool CanStart =>
-        true;
+    private bool CanStart => true;
 
     private void StartQuiz()
     {
-        var cat = string.IsNullOrWhiteSpace(selectedCategory)
-            ? null
-            : selectedCategory;
-
-        var diff = selectedDifficulty.HasValue
-            ? selectedDifficulty.Value.ToString()
-            : null;
-
-        var url = $"/quiz?";
-
+        var url = "/quiz?";
         var query = new List<string>();
 
-        if (!string.IsNullOrWhiteSpace(cat))
-            query.Add($"category={cat}");
+        if (!string.IsNullOrWhiteSpace(selectedCategory))
+            query.Add($"category={selectedCategory}");
 
         if (selectedDifficulty.HasValue)
-            query.Add($"difficulty={selectedDifficulty.Value}");
+            query.Add($"difficulty={selectedDifficulty}");
 
         url += string.Join("&", query);
 

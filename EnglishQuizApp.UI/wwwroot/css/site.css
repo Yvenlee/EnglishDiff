@@ -1,18 +1,18 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
 /* =========================
-   GLOBAL STYLE RESET
+   GLOBAL
 ========================= */
 
 html, body {
-    font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background: #f6f7fb;
-    color: #1f2937;
+    font-family: 'Inter', system-ui, -apple-system, Helvetica, Arial, sans-serif;
+    background: #f4f6fb;
+    color: #111827;
     margin: 0;
     padding: 0;
 }
 
-a, .btn-link {
+a {
     color: #4f46e5;
     text-decoration: none;
 }
@@ -26,7 +26,28 @@ a:hover {
 ========================= */
 
 .content {
-    padding-top: 1.5rem;
+    padding: 2rem 1rem;
+}
+
+/* =========================
+   CONTAINER SYSTEM
+========================= */
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+}
+
+/* =========================
+   CARDS (clean modern UI)
+========================= */
+
+.card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 10px 30px rgba(17, 24, 39, 0.08);
+    border: 1px solid #eef0f5;
 }
 
 /* =========================
@@ -34,21 +55,22 @@ a:hover {
 ========================= */
 
 .btn {
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 10px 16px;
-    font-weight: 500;
-    transition: all 0.2s ease-in-out;
+    font-weight: 600;
+    transition: all 0.2s ease;
     border: none;
     cursor: pointer;
 }
 
 .btn-primary {
-    color: white;
     background: #4f46e5;
+    color: white;
 }
 
 .btn-primary:hover {
     background: #4338ca;
+    transform: translateY(-1px);
 }
 
 .btn-success {
@@ -58,95 +80,99 @@ a:hover {
 
 .btn-success:hover {
     background: #15803d;
+    transform: translateY(-1px);
 }
 
-/* Focus accessibility */
-.btn:focus,
-.btn:active:focus,
-.btn-link.nav-link:focus,
-.form-control:focus,
-.form-check-input:focus {
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+.btn-outline-secondary {
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #374151;
+}
+
+.btn-outline-secondary:hover {
+    background: #f3f4f6;
+}
+
+/* disabled */
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* =========================
    FORMS
 ========================= */
 
-.form-control {
-    border-radius: 10px;
+.form-control,
+.form-select {
+    border-radius: 12px;
     border: 1px solid #e5e7eb;
-    padding: 10px;
+    padding: 10px 12px;
+    background: white;
+    transition: 0.2s;
 }
 
-.form-control:focus {
+.form-control:focus,
+.form-select:focus {
     border-color: #4f46e5;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 6px;
 }
 
 /* =========================
-   QUIZ UI (IMPORTANT)
+   QUIZ UI (CLEAN SYSTEM)
 ========================= */
 
-.quiz-container {
-    max-width: 720px;
-    margin: auto;
-    padding: 20px;
+.quiz-option {
+    margin-bottom: 10px;
 }
 
-.card {
-    background: white;
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-}
-
-.question-text {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 20px;
-}
-
-.answers {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.answer {
-    padding: 12px;
+.quiz-option label {
+    display: block;
+    padding: 12px 14px;
+    border-radius: 14px;
     border: 2px solid #e5e7eb;
-    border-radius: 12px;
+    background: white;
     cursor: pointer;
     transition: 0.2s;
-    background: white;
 }
 
-.answer:hover {
+.quiz-option label:hover {
     border-color: #4f46e5;
     transform: translateY(-1px);
 }
 
-.answer.selected {
-    border-color: #4f46e5;
-    background: #eef2ff;
+.quiz-option input {
+    margin-right: 10px;
+}
+
+/* selected / states */
+.quiz-option.correct label {
+    border-color: #16a34a;
+    background: #dcfce7;
+}
+
+.quiz-option.wrong label {
+    border-color: #ef4444;
+    background: #fee2e2;
 }
 
 /* =========================
-   PROGRESS BAR
+   PROGRESS + TYPO
 ========================= */
 
-.progress-bar {
-    height: 10px;
-    background: #e5e7eb;
-    border-radius: 999px;
-    overflow: hidden;
-    margin-bottom: 20px;
+.question-text {
+    font-size: 20px;
+    font-weight: 700;
 }
 
-.progress {
-    height: 100%;
-    background: linear-gradient(90deg, #4f46e5, #6366f1);
-    transition: width 0.3s ease;
+.text-muted {
+    color: #6b7280;
 }
 
 /* =========================
@@ -157,92 +183,56 @@ a:hover {
     margin-top: 20px;
     padding: 24px;
     background: #ecfdf5;
-    border-radius: 16px;
+    border-radius: 18px;
     text-align: center;
 }
 
 .score {
-    font-size: 40px;
-    font-weight: bold;
+    font-size: 44px;
+    font-weight: 800;
     color: #16a34a;
 }
 
 /* =========================
-   VALIDATION (Blazor default)
+   UTILITIES
 ========================= */
 
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #16a34a;
+.text-center {
+    text-align: center;
 }
 
-.invalid {
-    outline: 1px solid #ef4444;
+.w-100 {
+    width: 100%;
 }
 
-.validation-message {
-    color: #ef4444;
+.mb-2 { margin-bottom: 8px; }
+.mb-3 { margin-bottom: 12px; }
+.mb-4 { margin-bottom: 18px; }
+
+.py-5 {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
 }
 
 /* =========================
-   ERROR UI (KEEP ORIGINAL SAFE)
+   BLazor ERROR UI (KEEP SAFE)
 ========================= */
 
 #blazor-error-ui {
     background: #fff3cd;
     bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
     display: none;
     left: 0;
     padding: 1rem;
     position: fixed;
     width: 100%;
     z-index: 1000;
-}
-
-#blazor-error-ui .dismiss {
-    cursor: pointer;
-    position: absolute;
-    right: 1rem;
-    top: 0.5rem;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
 }
 
 .blazor-error-boundary {
     background: #b32121;
     color: white;
-    padding: 1rem 1rem 1rem 3.7rem;
-}
-
-.blazor-error-boundary::after {
-    content: "An error has occurred.";
-}
-
-.answer.correct {
-    background: #d4f8d4;
-    border: 2px solid #2ecc71;
-}
-
-.answer.wrong {
-    background: #ffd6d6;
-    border: 2px solid #e74c3c;
-}
-
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.correct-answer {
-    background-color: #d4edda;
-    color: #155724;
-    padding: 8px;
-    border-radius: 6px;
-    margin-bottom: 6px;
-}
-
-.wrong-answer {
-    background-color: #f8d7da;
-    color: #721c24;
-    padding: 8px;
-    border-radius: 6px;
-    margin-bottom: 6px;
+    padding: 1rem;
+    border-radius: 12px;
 }

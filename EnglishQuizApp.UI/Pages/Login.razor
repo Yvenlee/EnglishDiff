@@ -1,39 +1,39 @@
 @page "/login"
-@using EnglishQuizApp.UI.Services.Auth
 @inject AuthService AuthService
 @inject NavigationManager Nav
 
-<h3>Login</h3>
+<div class="container py-5 d-flex justify-content-center">
 
-@if (!string.IsNullOrEmpty(error))
-{
-    <p style="color:red">@error</p>
-}
+    <div class="card shadow-sm w-100" style="max-width: 420px;">
+        <div class="card-body">
 
-<div>
-    <input placeholder="Email" @bind="email" />
-</div>
+            <h3 class="text-center mb-4">Login</h3>
 
-<div>
-    <input placeholder="Password" type="password" @bind="password" />
-</div>
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert alert-danger">@error</div>
+            }
 
-<br />
+            <div class="mb-3">
+                <input class="form-control" placeholder="Email" @bind="email" />
+            </div>
 
-<button @onclick="HandleLogin" disabled="@isLoading">
-    @(isLoading ? "Loading..." : "Login")
-</button>
+            <div class="mb-3">
+                <input class="form-control" type="password" placeholder="Password" @bind="password" />
+            </div>
 
-<!--Register-->
-<div style="margin-top:20px;">
-    <p>Don't have an account?</p>
+            <button class="btn btn-primary w-100" @onclick="HandleLogin" disabled="@isLoading">
+                @(isLoading ? "Loading..." : "Login")
+            </button>
 
-    <button @onclick="GoToRegister">
-        Register
-    </button>
+            <hr />
 
-    <div style="margin-top:10px;">
-        <a href="/register">Create an account</a>
+            <div class="text-center">
+                <p class="mb-2">Don't have an account?</p>
+                <a href="/register" class="btn btn-outline-secondary w-100">Create account</a>
+            </div>
+
+        </div>
     </div>
 </div>
 
@@ -45,8 +45,7 @@
 
     private async Task HandleLogin()
     {
-        if (isLoading)
-            return;
+        if (isLoading) return;
 
         isLoading = true;
         error = "";
@@ -65,16 +64,11 @@
         }
         catch (Exception ex)
         {
-            error = "Error: " + ex.Message;
+            error = ex.Message;
         }
         finally
         {
             isLoading = false;
         }
-    }
-
-    private void GoToRegister()
-    {
-        Nav.NavigateTo("/register");
     }
 }

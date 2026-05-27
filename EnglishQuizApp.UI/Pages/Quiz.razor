@@ -1,96 +1,112 @@
 @page "/quiz"
-
 @attribute [Authorize]
 
 @inject QuizService QuizService
 @inject NavigationManager NavigationManager
-@inject AuthenticationStateProvider AuthStateProvider
 
-<h2>Quiz</h2>
+<div class="container py-5">
 
-@if (isLoading)
-{
-    <p>Loading quiz...</p>
-}
-else if (questions == null || questions.Count == 0)
-{
-    <p>No questions available.</p>
-}
-else
-{
-    <p>Question @(currentIndex + 1) / @questions.Count</p>
+    <h2 class="text-center mb-4">Quiz</h2>
 
-    <p><b>@CurrentQuestion.Text</b></p>
-
-    @foreach (var a in CurrentQuestion.Answers)
+    @if (isLoading)
     {
-        var isSelected =
-            selectedAnswers.TryGetValue(CurrentQuestion.Id, out var selected)
-            && selected == a.Id;
-
-        var hasAnswered =
-            answeredQuestions.ContainsKey(CurrentQuestion.Id);
-
-        var correctAnswerId =
-            correctAnswers.ContainsKey(CurrentQuestion.Id)
-                ? correctAnswers[CurrentQuestion.Id]
-                : -1;
-
-        string cssClass = "";
-
-        if (hasAnswered)
-        {
-            if (a.Id == correctAnswerId)
-            {
-                cssClass = "correct-answer";
-            }
-            else if (isSelected)
-            {
-                cssClass = "wrong-answer";
-            }
-        }
-
-        <div class="@cssClass">
-            <label>
-                <input type="radio"
-                    name="@($"q_{CurrentQuestion.Id}")"
-                    disabled="@hasAnswered"
-                    checked="@isSelected"
-                    @onchange="async () => await SelectAnswer(CurrentQuestion.Id, a.Id)" />
-
-                @a.Text
-            </label>
+        <div class="text-center">
+            <div class="spinner-border"></div>
         </div>
     }
-
-    <br />
-
-    @if (!isSubmitted)
+    else if (questions == null || questions.Count == 0)
     {
-        @if (currentIndex < questions.Count - 1)
+        <p class="text-center text-muted">No questions available.</p>
+    }
+    else
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <span>Question @(currentIndex + 1) / @questions.Count</span>
+                </div>
+
+                <hr />
+
+                <h5 class="mb-3">@CurrentQuestion.Text</h5>
+
+                @foreach (var a in CurrentQuestion.Answers)
+                {
+                    var isSelected =
+                        selectedAnswers.TryGetValue(CurrentQuestion.Id, out var selected)
+                        && selected == a.Id;
+
+                    var hasAnswered = answeredQuestions.ContainsKey(CurrentQuestion.Id);
+
+                    var correctAnswerId =
+                        correctAnswers.ContainsKey(CurrentQuestion.Id)
+                            ? correctAnswers[CurrentQuestion.Id]
+                            : -1;
+
+                    string css = "quiz-option";
+
+                    if (hasAnswered)
+                    {
+                        if (a.Id == correctAnswerId)
+                            css += " correct";
+                        else if (isSelected)
+                            css += " wrong";
+                    }
+
+                    <div class="@css">
+                        <label class="w-100 p-2 border rounded mb-2">
+                            <input type="radio"
+                                   name="@($"q_{CurrentQuestion.Id}")"
+                                   disabled="@hasAnswered"
+                                   checked="@isSelected"
+                                   @onchange="async () => await SelectAnswer(CurrentQuestion.Id, a.Id)" />
+                            @a.Text
+                        </label>
+                    </div>
+                }
+
+                <div class="mt-3 d-flex justify-content-end">
+                    @if (!isSubmitted)
+                    {
+                        @if (currentIndex < questions.Count - 1)
+                        {
+                            <button class="btn btn-primary"
+                                    disabled="@(!isAnswered)"
+                                    @onclick="Next">
+                                Next
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-success"
+                                    disabled="@(!isAnswered)"
+                                    @onclick="SubmitQuiz">
+                                Finish
+                            </button>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        @if (result != null)
         {
-            <button disabled="@(!isAnswered)" @onclick="Next">Next</button>
-        }
-        else
-        {
-            <button disabled="@(!isAnswered)" @onclick="SubmitQuiz">Finish</button>
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h3>Result</h3>
+                    <h1 class="text-primary">@result.ScorePercent %</h1>
+                    <p>@result.CorrectAnswers / @result.TotalQuestions correct</p>
+
+                    <button class="btn btn-outline-primary" @onclick="Restart">
+                        Restart
+                    </button>
+                </div>
+            </div>
         }
     }
-
-    @if (result != null)
-    {
-        <hr />
-        <h3>Result</h3>
-
-        <p><b>@result.ScorePercent %</b></p>
-        <p>@result.CorrectAnswers / @result.TotalQuestions</p>
-
-        <button @onclick="Restart">Restart</button>
-    }
-}
+</div>
 
 @code {
-
     private List<QuestionDto>? questions;
     private int currentIndex = 0;
 
@@ -118,12 +134,7 @@ else
             category = string.IsNullOrWhiteSpace(cat) ? null : cat.ToString();
 
         if (query.TryGetValue("difficulty", out var diff))
-        {
-            if (int.TryParse(diff, out var d))
-                difficulty = d;
-            else
-                difficulty = null;
-        }
+            difficulty = int.TryParse(diff, out var d) ? d : null;
 
         await LoadQuiz();
     }
@@ -131,12 +142,9 @@ else
     private async Task LoadQuiz()
     {
         isLoading = true;
-
         var quiz = await QuizService.GetQuiz(category, difficulty, 5);
-
         questions = quiz.Questions;
         sessionId = quiz.SessionId;
-
         isLoading = false;
     }
 
@@ -144,19 +152,16 @@ else
 
     private async Task SelectAnswer(int questionId, int answerId)
     {
-        if (answeredQuestions.ContainsKey(questionId))
-            return;
+        if (answeredQuestions.ContainsKey(questionId)) return;
 
         selectedAnswers[questionId] = answerId;
 
         var response = await QuizService.CheckAnswer(questionId, answerId);
 
         correctAnswers[questionId] = response.CorrectAnswerId;
-
         answeredQuestions[questionId] = true;
 
         isAnswered = true;
-
         await InvokeAsync(StateHasChanged);
     }
 
@@ -188,7 +193,7 @@ else
     {
         currentIndex = 0;
         selectedAnswers.Clear();
-        isAnswered = false; 
+        isAnswered = false;
         isSubmitted = false;
         result = null;
 
