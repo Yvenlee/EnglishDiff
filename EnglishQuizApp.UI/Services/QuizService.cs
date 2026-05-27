@@ -31,40 +31,57 @@ public class QuizService
         }
     }
 
-public async Task<QuizResponseDto> GetQuiz(
-    string? category,
-    int? difficulty,
-    int count = 5)
-{
-    Console.WriteLine("QUIZ CALL");
-
-    try
+    public async Task<QuizResponseDto> GetQuiz(
+        string? category,
+        int? difficulty,
+        int count = 5)
     {
-        AttachToken();
+        Console.WriteLine("QUIZ CALL");
 
-        var query = new List<string>
+        try
         {
-            $"count={count}"
-        };
+            AttachToken();
 
-        if (!string.IsNullOrWhiteSpace(category))
-            query.Add($"category={category}");
+            var query = new List<string>
+            {
+                $"count={count}"
+            };
 
-        if (difficulty.HasValue)
-            query.Add($"difficulty={difficulty.Value}");
+            if (!string.IsNullOrWhiteSpace(category))
+                query.Add($"category={category}");
 
-        var url = "api/quiz/random?" + string.Join("&", query);
+            if (difficulty.HasValue)
+                query.Add($"difficulty={difficulty.Value}");
 
-        var result = await _http.GetFromJsonAsync<QuizResponseDto>(url);
+            var url = "api/quiz/random?" + string.Join("&", query);
 
-        return result ?? new QuizResponseDto();
+            var result = await _http.GetFromJsonAsync<QuizResponseDto>(url);
+
+            return result ?? new QuizResponseDto();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"GET QUIZ ERROR: {ex.Message}");
+            return new QuizResponseDto();
+        }
     }
-    catch (Exception ex)
+
+    public async Task<CheckAnswerResponseDto> CheckAnswer(int questionId, int answerId)
     {
-        Console.WriteLine($"GET QUIZ ERROR: {ex.Message}");
-        return new QuizResponseDto();
+        var response = await _http.PostAsJsonAsync(
+            "api/quiz/check-answer",
+            new CheckAnswerRequestDto
+            {
+                QuestionId = questionId,
+                AnswerId = answerId
+            });
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content
+            .ReadFromJsonAsync<CheckAnswerResponseDto>()
+            ?? throw new Exception("Invalid response");
     }
-}
 
     public async Task<ScoreResultDto> Submit(string sessionId, List<SubmitAnswerDto> answers)
     {

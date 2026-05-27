@@ -28,13 +28,36 @@ else
             selectedAnswers.TryGetValue(CurrentQuestion.Id, out var selected)
             && selected == a.Id;
 
-        <div>
+        var hasAnswered =
+            answeredQuestions.ContainsKey(CurrentQuestion.Id);
+
+        var correctAnswerId =
+            correctAnswers.ContainsKey(CurrentQuestion.Id)
+                ? correctAnswers[CurrentQuestion.Id]
+                : -1;
+
+        string cssClass = "";
+
+        if (hasAnswered)
+        {
+            if (a.Id == correctAnswerId)
+            {
+                cssClass = "correct-answer";
+            }
+            else if (isSelected)
+            {
+                cssClass = "wrong-answer";
+            }
+        }
+
+        <div class="@cssClass">
             <label>
                 <input type="radio"
-                       name="@($"q_{CurrentQuestion.Id}")"
-                       disabled="@isAnswered"
-                       checked="@isSelected"
-                       @onchange="() => SelectAnswer(CurrentQuestion.Id, a.Id)" />
+                    name="@($"q_{CurrentQuestion.Id}")"
+                    disabled="@hasAnswered"
+                    checked="@isSelected"
+                    @onchange="async () => await SelectAnswer(CurrentQuestion.Id, a.Id)" />
+
                 @a.Text
             </label>
         </div>
@@ -83,6 +106,8 @@ else
     private ScoreResultDto? result;
 
     private Dictionary<int, int> selectedAnswers = new();
+    private Dictionary<int, int> correctAnswers = new();
+    private Dictionary<int, bool> answeredQuestions = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -117,10 +142,22 @@ else
 
     private QuestionDto CurrentQuestion => questions![currentIndex];
 
-    private void SelectAnswer(int questionId, int answerId)
+    private async Task SelectAnswer(int questionId, int answerId)
     {
+        if (answeredQuestions.ContainsKey(questionId))
+            return;
+
         selectedAnswers[questionId] = answerId;
+
+        var response = await QuizService.CheckAnswer(questionId, answerId);
+
+        correctAnswers[questionId] = response.CorrectAnswerId;
+
+        answeredQuestions[questionId] = true;
+
         isAnswered = true;
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private void Next()

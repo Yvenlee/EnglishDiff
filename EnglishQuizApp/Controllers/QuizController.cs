@@ -1,6 +1,7 @@
 using EnglishQuizApp.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 [Authorize]
@@ -119,6 +120,27 @@ public class QuizController : ControllerBase
             earnedXp = xp,
             totalXp = progress.TotalXp,
             level = progress.Level
+        });
+    }
+
+    [HttpPost("check-answer")]
+    public IActionResult CheckAnswer(CheckAnswerRequestDto request)
+    {
+        var question = _context.Questions
+            .Include(q => q.Answers)
+            .FirstOrDefault(q => q.Id == request.QuestionId);
+
+        if (question == null)
+            return NotFound();
+
+        var correctAnswer = question.Answers.First(a => a.IsCorrect);
+
+        bool isCorrect = correctAnswer.Id == request.AnswerId;
+
+        return Ok(new
+        {
+            isCorrect,
+            correctAnswerId = correctAnswer.Id
         });
     }
 
