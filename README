@@ -1,21 +1,21 @@
-# 🇬🇧 English Quiz App
+English Quiz App
 
 Un fichier Gif est disponaible à la racine du projet pour une démonstration rapide de l’application.
 Il se nomme `EnglishQuizAppDemo.gif`
-## Description
 
-**English Quiz App** est une application d’apprentissage de l’anglais permettant de progresser de manière ludique grâce à des quiz interactifs.
+
+English Quiz App est une application d’apprentissage de l’anglais permettant de progresser de manière ludique grâce à des quiz interactifs.
 
 Le projet est séparé en deux parties :
 
-- **EnglishQuizApp** → API backend
-- **EnglishQuizApp.UI** → interface utilisateur
+- EnglishQuizApp → API backend
+- EnglishQuizApp.UI → interface utilisateur
 
 Cette architecture permet une meilleure organisation du code, une séparation claire des responsabilités et une maintenance plus simple du projet.
 
 ---
 
-## Objectif du projet
+Objectif du projet :
 
 L’anglais est une compétence essentielle dans le développement informatique, mais il peut être difficile à pratiquer régulièrement.
 
@@ -25,7 +25,7 @@ L’objectif est de proposer une expérience simple, moderne et motivante autour
 
 ---
 
-## Fonctionnalités
+Fonctionnalités :
 
 - Quiz interactifs
 - Questions à choix multiples
@@ -37,12 +37,12 @@ L’objectif est de proposer une expérience simple, moderne et motivante autour
 
 ---
 
-## Technologies utilisées
+Technologies utilisées :
 
-- **C#**
-- **.NET**
-- **Blazor**
-- **Entity Framework Core**
-- **SQL Server**
-- **HTML / CSS**
-- **Visual Studio Code**
+- C#
+- .NET
+- Blazor
+- Entity Framework Core
+- SQL Server
+- HTML / CSS
+- Visual Studio Code
