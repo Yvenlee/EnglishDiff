@@ -3,11 +3,13 @@ using EnglishQuizApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using EnglishQuizApp.Models;
+using EnglishQuizApp.Helpers;
 
 public class QuizSeeder
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _configuration;
+    
 
     public QuizSeeder(AppDbContext context, IConfiguration configuration)
     {
@@ -17,24 +19,12 @@ public class QuizSeeder
 
     public void SeedFromJson()
     {
-        // Condition via appsettings.json
         if (!_configuration.GetValue<bool>("SeedDatabase"))
-        {
             return;
-        }
-
-        // Sécurité: éviter double seed
-        if (_context.Questions.Any())
-        {
-            return;
-        }
 
         var path = Path.Combine(AppContext.BaseDirectory, "SeedData/questions.json");
-
         if (!File.Exists(path))
-        {
             return;
-        }
 
         var json = File.ReadAllText(path);
 
@@ -43,24 +33,36 @@ public class QuizSeeder
             PropertyNameCaseInsensitive = true
         };
 
-        var questions = JsonSerializer.Deserialize<List<QuestionSeed>>(json, options);
+        var seedQuestions = JsonSerializer.Deserialize<List<QuestionSeed>>(json, options);
 
-        Console.WriteLine($"Loaded: {questions?.Count}");
-
-        if (questions == null || !questions.Any())
+        if (seedQuestions == null || !seedQuestions.Any())
             return;
 
-        foreach (var q in questions)
+        var dbQuestions = _context.Questions
+            .Include(q => q.Answers)
+            .ToList();
+
+        var dbMap = dbQuestions.ToDictionary(q => q.ContentHash);
+
+        foreach (var q in seedQuestions)
         {
             var correctCount = q.Answers.Count(a => a.IsCorrect);
-
             if (correctCount != 1)
+                continue;
+
+            var hash = QuestionHashHelper.GenerateHash(q);
+
+            // UPDATE
+            if (dbMap.TryGetValue(hash, out var existing))
             {
                 continue;
             }
 
+            // INSERT
             _context.Questions.Add(new Question
+            
             {
+                ContentHash = hash,
                 Text = q.Text,
                 Category = q.Category,
                 Difficulty = q.Difficulty,
@@ -73,7 +75,5 @@ public class QuizSeeder
         }
 
         _context.SaveChanges();
-
-        Console.WriteLine("Seeding completed.");
     }
 }

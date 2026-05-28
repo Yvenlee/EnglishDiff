@@ -1,0 +1,1 @@
+SELECT TOP 10 ContentHash FROM Questions;
