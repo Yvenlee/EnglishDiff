@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using EnglishQuizApp.Models;
 using EnglishQuizApp.Helpers;
+using EFCore.BulkExtensions;
 
 public class QuizSeeder
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _configuration;
-    
 
     public QuizSeeder(AppDbContext context, IConfiguration configuration)
     {
@@ -17,16 +17,17 @@ public class QuizSeeder
         _configuration = configuration;
     }
 
-    public void SeedFromJson()
+    public async Task SeedFromJsonAsync()
     {
         if (!_configuration.GetValue<bool>("SeedDatabase"))
             return;
 
         var path = Path.Combine(AppContext.BaseDirectory, "SeedData/questions.json");
+
         if (!File.Exists(path))
             return;
 
-        var json = File.ReadAllText(path);
+        var json = await File.ReadAllTextAsync(path);
 
         var options = new JsonSerializerOptions
         {
@@ -38,29 +39,28 @@ public class QuizSeeder
         if (seedQuestions == null || !seedQuestions.Any())
             return;
 
-        var dbQuestions = _context.Questions
-            .Include(q => q.Answers)
-            .ToList();
+        // On récupère uniquement les hashes existants
+        var existingHashes = (await _context.Questions
+            .Select(q => q.ContentHash)
+            .ToListAsync())
+            .ToHashSet();
 
-        var dbMap = dbQuestions.ToDictionary(q => q.ContentHash);
+        var questionsToInsert = new List<Question>();
 
         foreach (var q in seedQuestions)
         {
             var correctCount = q.Answers.Count(a => a.IsCorrect);
+
             if (correctCount != 1)
                 continue;
 
             var hash = QuestionHashHelper.GenerateHash(q);
 
-            // UPDATE
-            if (dbMap.TryGetValue(hash, out var existing))
-            {
+            // Ignore si déjà présent
+            if (existingHashes.Contains(hash))
                 continue;
-            }
 
-            // INSERT
-            _context.Questions.Add(new Question
-            
+            questionsToInsert.Add(new Question
             {
                 ContentHash = hash,
                 Text = q.Text,
@@ -74,6 +74,13 @@ public class QuizSeeder
             });
         }
 
-        _context.SaveChanges();
+        if (!questionsToInsert.Any())
+            return;
+
+        // Bulk insert Questions
+        await _context.BulkInsertAsync(questionsToInsert, new BulkConfig
+        {
+            IncludeGraph = true
+        });
     }
 }

@@ -125,7 +125,7 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var seeder = scope.ServiceProvider.GetRequiredService<QuizSeeder>();
-    seeder.SeedFromJson();
+    await seeder.SeedFromJsonAsync();
 }
 
 app.Run();
